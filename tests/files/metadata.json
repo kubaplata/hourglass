@@ -1,0 +1,22 @@
+{
+  "description": "First Hourglass, initialized by Anatoly Yakovenko himself. Powered by Hourglass Protocol.",
+  "name": "Hourglass #1 - Toly",
+  "image": "https://bafkreiefwviqmjyykws6k7oxckhr5lygywgau6ruscvhv5whyipyzrvwpi.ipfs.nftstorage.link/",
+  "properties": {
+    "category": "image",
+    "creators": [
+      {
+        "address": "FsqK75jj26WgF8LWXt8iZwwWKBFiAPp1hZu4mBdGgTmA",
+        "share": 100
+      }
+    ],
+    "files": [
+      {
+        "uri": "https://bafkreiefwviqmjyykws6k7oxckhr5lygywgau6ruscvhv5whyipyzrvwpi.ipfs.nftstorage.link/",
+        "type": "image/jpg"
+      }
+    ]
+  },
+  "seller_fee_basis_points": 0,
+  "symbol": "TOLY"
+}
