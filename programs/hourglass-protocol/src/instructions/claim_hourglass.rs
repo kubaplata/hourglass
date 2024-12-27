@@ -28,18 +28,11 @@ pub fn claim_hourglass(
     let hourglass_auction = &mut ctx.accounts.hourglass_auction;
     let hourglass_associated_account = &mut ctx.accounts.hourglass_associated_account;
     let user_auction_account = &mut ctx.accounts.user_auction_account;
-    let user_tax_account = &mut ctx.accounts.user_tax_account;
-
     let token_program = &mut ctx.accounts.token_program;
-    let system_program = &mut ctx.accounts.system_program;
-    let clockwork_program = &mut ctx.accounts.clockwork_program;
-
     let hourglass_mint = &mut ctx.accounts.hourglass_mint;
     let hourglass_vault = &mut ctx.accounts.hourglass_vault;
     let user_hourglass_ata = &mut ctx.accounts.user_hourglass_ata;
     let hourglass_creator_account = &mut ctx.accounts.hourglass_creator_account;
-
-    let thread = &mut ctx.accounts.thread;
 
     // Check if auction has already been claimed.
     require!(
@@ -108,45 +101,6 @@ pub fn claim_hourglass(
 
     // List the Hourglass on the free market
     hourglass_associated_account.current_price = instant_sell_price;
-
-    msg!(&thread.key().to_string());
-
-    clockwork_sdk::cpi::thread_create(
-        CpiContext::new_with_signer(
-            clockwork_program.to_account_info(), 
-            clockwork_sdk::cpi::ThreadCreate {
-                payer: user.to_account_info(),
-                authority: hourglass_associated_account.to_account_info(),
-                system_program: system_program.to_account_info(),
-                thread: thread.to_account_info()
-            }, 
-            &[signer_seeds]
-        ),
-        // Max two invocations, have to calculate exact amount.
-        10_000_000,
-        hourglass_associated_account.clockwork_thread_id.to_string().as_bytes().to_vec(),
-        vec![
-            Instruction {
-                data: crate::instruction::ValidateTax{ hourglass_id, user: user.key() }.data(),
-                program_id: ctx.program_id.clone(),
-                accounts: crate::accounts::ValidateTax {
-                    clockwork_program: clockwork_program.key(),
-                    hourglass_associated_account: hourglass_associated_account.key(),
-                    hourglass_mint: hourglass_mint.key(),
-                    hourglass_owner_ata: user_hourglass_ata.key(),
-                    hourglass_vault: hourglass_vault.key(),
-                    user_tax_account: user_tax_account.key(),
-                    system_program: system_program.key(),
-                    token_program: token_program.key(),
-                }.to_account_metas(None)
-            }.into()
-        ],
-        clockwork_sdk::state::Trigger::Timestamp {
-            unix_ts: hourglass_associated_account.owned_till as i64
-        }
-    )?;
-
-    msg!("Thread initialized.");
 
     // After claiming auction, increase Clockwork thread ID by one.
     hourglass_associated_account.clockwork_thread_id += 1;
@@ -262,16 +216,6 @@ pub struct ClaimHourglass<'info> {
     )]
     pub user_hourglass_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
-    #[account(
-        mut, 
-        address = clockwork_sdk::state::Thread::pubkey(
-            hourglass_associated_account.key(), 
-            hourglass_associated_account.clockwork_thread_id.to_string().as_bytes().to_vec()
-        )
-    )]
-    pub thread: SystemAccount<'info>,
-
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
-    pub clockwork_program: Program<'info, clockwork_sdk::ThreadProgram>
 }

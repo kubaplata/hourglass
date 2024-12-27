@@ -23,39 +23,59 @@ use spl_token_metadata_interface::state::TokenMetadata;
 use spl_token_metadata_interface::state::Field;
 use spl_pod::optional_keys::OptionalNonZeroPubkey;
 
+#[derive(AnchorDeserialize, AnchorSerialize)]
+pub struct CreateHourglassArgs {
+    pub hourglass_id: u64,
+    pub name: String,
+    pub symbol: String,
+    pub metadata_uri: String,
+    pub description: String,
+    pub image: String,
+    pub creator_name: String,
+    pub service: [bool; 8],
+    pub is_public: bool,
+    pub auction_length: u64,
+    pub ownership_period: u64,
+    pub grace_period: u64,
+    pub minimum_sale_price: u64,
+    pub minimum_bid: u64,
+    pub tax_rate: u64,
+    pub royalties: u64,
+}
+
 pub fn create_hourglass(
     ctx: Context<CreateHourglass>,
-    hourglass_id: u64,
-
-    // Metadata
-    name: String,
-    symbol: String,
-    metadata_uri: String,
-    description: String,
-    image: String,
-    creator_name: String,
-
-    // Making space for 8 possible offered future services.
-    // In v1, only service[0] matters, since it's responsible for access to the chat.
-    service: [bool; 8],
-    public: bool,
-    auction_length: u64,
-    ownership_period: u64,
-    grace_period: u64,
-    minimum_sale_price: u64,
-    minimum_bid: u64,
-    tax_rate: u64,
-    royalties: u64,
+    args: CreateHourglassArgs
 ) -> Result<()> {
-    let creator = &mut ctx.accounts.creator;
+
+    let CreateHourglassArgs {
+        hourglass_id,
+        name,
+        symbol,
+        metadata_uri,
+        description,
+        image,
+        creator_name,
+        service,
+        auction_length,
+        ownership_period,
+        grace_period,
+        minimum_sale_price,
+        minimum_bid,
+        tax_rate,
+        royalties,
+        is_public
+    } = args;
+
+    let creator = &ctx.accounts.creator;
     let hourglass_protocol = &mut ctx.accounts.hourglass_protocol;
     let hourglass_associated_account = &mut ctx.accounts.hourglass_associated_account;
-    let mint = &mut ctx.accounts.hourglass_mint;
+    let mint = &ctx.accounts.hourglass_mint;
     let token_program = &mut ctx.accounts.token_program;
-    let associated_token_program = &mut ctx.accounts.associated_token_program;
-    let rent_program = &mut ctx.accounts.rent_program;
-    let hourglass_vault = &mut ctx.accounts.hourglass_vault;
-    let system_program = &mut ctx.accounts.system_program;
+    let associated_token_program = &ctx.accounts.associated_token_program;
+    let rent_program = &ctx.accounts.rent_program;
+    let hourglass_vault = &ctx.accounts.hourglass_vault;
+    let system_program = &ctx.accounts.system_program;
     
     require!(
         hourglass_id == hourglass_protocol.total_hourglasses,
@@ -69,7 +89,7 @@ pub fn create_hourglass(
 
     hourglass_protocol.total_hourglasses += 1;
     hourglass_associated_account.service = service;
-    hourglass_associated_account.is_public = public;
+    hourglass_associated_account.is_public = is_public;
     hourglass_associated_account.auction_length = auction_length;
     hourglass_associated_account.ownership_period = ownership_period;
     hourglass_associated_account.grace_period = grace_period;
@@ -282,7 +302,7 @@ pub fn create_hourglass(
 }
 
 #[derive(Accounts)]
-#[instruction(hourglass_id: u64, name: String, symbol: String, metadata_uri: String)]
+#[instruction(args: CreateHourglassArgs)]
 pub struct CreateHourglass<'info> {
     #[account(
         mut
@@ -327,7 +347,7 @@ pub struct CreateHourglass<'info> {
         space = 8 + (15 * 8) + 1 + (3 * 32),
         seeds = [
             "hourglass_associated_account".as_bytes(), 
-            &hourglass_id.to_be_bytes()
+            &hourglass_protocol.total_hourglasses.to_be_bytes()
         ],
         bump
     )]

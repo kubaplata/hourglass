@@ -9,10 +9,7 @@ use anchor_spl::token_interface::{
     transfer_checked,
     TransferChecked
 };
-use clockwork_sdk::cpi::ThreadUpdate;
-use clockwork_sdk::state::ThreadSettings;
 use crate::states::*;
-use solana_program::instruction::Instruction;
 
 pub fn purchase_hourglass(
     ctx: Context<PurchaseHourglass>,
@@ -22,20 +19,11 @@ pub fn purchase_hourglass(
     let seller = &mut ctx.accounts.seller;
     let user = &mut ctx.accounts.user;
     let creator_account = &mut ctx.accounts.creator_hourglass_account;
-
-    let hourglass_vault = &mut ctx.accounts.hourglass_vault;
     let hourglass = &mut ctx.accounts.hourglass_mint;
     let price = hourglass_associated_account.current_price;
     let royalties_rate: u64 = hourglass_associated_account.royalties;
-
-    let user_tax_account = &mut ctx.accounts.user_tax_account;
-
-    let current_thread = &mut ctx.accounts.current_thread;
-
     let token_program = &mut ctx.accounts.token_program;
     let system_program = &mut ctx.accounts.system_program;
-    let clockwork_program = &mut ctx.accounts.clockwork_program;
-
     let seller_ata = &mut ctx.accounts.seller_hourglass_ata;
     let buyer_ata = &mut ctx.accounts.user_hourglass_ata;
 
@@ -91,50 +79,6 @@ pub fn purchase_hourglass(
         ), 
         1,
         0
-    )?;
-
-    // On purchase, there is still an active clockwork worker that will trigger
-    // tax validation at the end of the ownership period. We don't need to check it
-    // anymore, because Hourglass is purchased by a different person. So we can simply cancel
-    // the thread.
-    clockwork_sdk::cpi::thread_update(
-        CpiContext::new_with_signer(
-            clockwork_program.to_account_info(), 
-            ThreadUpdate {
-                authority: hourglass_associated_account.to_account_info(),
-                thread: current_thread.to_account_info(),
-                system_program: system_program.to_account_info()
-            }, 
-            &[signer_seeds]
-        ),
-        ThreadSettings {
-            rate_limit: None,
-            trigger: Some(
-                clockwork_sdk::state::Trigger::Timestamp {
-                    unix_ts: hourglass_associated_account.owned_till as i64
-                }
-            ),
-            fee: None,
-            instructions: Some(
-                vec![
-                    Instruction {
-                        data: crate::instruction::ValidateTax{ hourglass_id, user: user.key() }.data(),
-                        program_id: ctx.program_id.clone(),
-                        accounts: crate::accounts::ValidateTax {
-                            clockwork_program: clockwork_program.key(),
-                            hourglass_associated_account: hourglass_associated_account.key(),
-                            hourglass_mint: hourglass.key(),
-                            hourglass_owner_ata: buyer_ata.key(),
-                            hourglass_vault: hourglass_vault.key(),
-                            user_tax_account: user_tax_account.key(),
-                            system_program: system_program.key(),
-                            token_program: token_program.key()
-                        }.to_account_metas(None)
-                    }.into()
-                ],
-            ),
-            name: None
-        }
     )?;
 
     // Increase ownership period index by 1.
@@ -234,18 +178,6 @@ pub struct PurchaseHourglass<'info> {
     )]
     pub hourglass_vault: InterfaceAccount<'info, TokenAccount>,
 
-    // Current thread is a thread that validates tax payment for the current owner.
-    // We need to pass it here, so we can update it.
-    #[account(
-        mut, 
-        address = clockwork_sdk::state::Thread::pubkey(
-            hourglass_associated_account.key(), 
-            (hourglass_associated_account.clockwork_thread_id - 1).to_string().as_bytes().to_vec()
-        )
-    )]
-    pub current_thread: SystemAccount<'info>,
-
     pub system_program: Program<'info, System>,
     pub token_program: Interface<'info, TokenInterface>,
-    pub clockwork_program: Program<'info, clockwork_sdk::ThreadProgram>,
 }

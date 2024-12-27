@@ -21,5 +21,3 @@ anchor-spl = "0.29.0"
 spl-pod = "0.1.1"
 solana-program = "*"
 spl-token-metadata-interface = "0.2.1"
-clockwork-sdk = { git = "https://github.com/kubaplata/clockwork" }
-

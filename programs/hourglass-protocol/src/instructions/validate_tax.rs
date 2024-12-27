@@ -11,7 +11,6 @@
 // user_tax_account PDA will hold Solana and transfer it to the creator at the end of the next ownership period.
 
 use anchor_lang::{prelude::*, InstructionData};
-use clockwork_sdk::*;
 use crate::states::*;
 use crate::errors::HourglassError;
 use anchor_spl::token_interface::{
@@ -126,8 +125,6 @@ pub struct ValidateTax<'info> {
         constraint = hourglass_owner_ata.amount == 1
     )]
     pub hourglass_owner_ata: InterfaceAccount<'info, TokenAccount>,
-    
-    pub clockwork_program: Program<'info, clockwork_sdk::ThreadProgram>,
     pub system_program: Program<'info, System>,
     pub token_program: Interface<'info, TokenInterface>,
 }

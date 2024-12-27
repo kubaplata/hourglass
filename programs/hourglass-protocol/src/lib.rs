@@ -29,45 +29,11 @@ pub mod hourglass_protocol {
 
     pub fn create_hourglass(
         ctx: Context<CreateHourglass>,
-        hourglass_id: u64,
-
-        name: String,
-        symbol: String,
-        metadata_uri: String,
-        description: String,
-        image: String,
-        creator_name: String,
-
-        service: [bool; 8],
-        is_public: bool,
-        auction_length: u64,
-        ownership_period: u64,
-        grace_period: u64,
-        minimum_sale_price: u64,
-        minimum_bid: u64,
-        tax_rate: u64,
-        royalties: u64,
+        args: CreateHourglassArgs
     ) -> Result<()> {
         instructions::create_hourglass(
             ctx, 
-            hourglass_id,
-
-            name, 
-            symbol, 
-            metadata_uri, 
-            description,
-            image,
-            creator_name,
-
-            service, 
-            is_public,
-            auction_length, 
-            ownership_period, 
-            grace_period, 
-            minimum_sale_price, 
-            minimum_bid, 
-            tax_rate,
-            royalties
+            args
         )
     }
 

@@ -1,7 +1,4 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::spl_token::instruction;
-use clockwork_sdk::*;
-use solana_program::native_token::LAMPORTS_PER_SOL;
 
 // This account manages Hourglass and is used for interactions with Clockwork.
 #[account]
