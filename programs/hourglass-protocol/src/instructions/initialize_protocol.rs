@@ -9,7 +9,7 @@ pub fn initialize_protocol(
     let admin = &mut ctx.accounts.admin;
     let hourglass_protocol = &mut ctx.accounts.hourglass_protocol;
     let fee_settlement_token = &mut ctx.accounts.fee_settlement_token;
-    let fee_collector = & mut ctx.accounts.fee_collector;
+    let fee_collector = &mut ctx.accounts.fee_collector;
 
     hourglass_protocol.admin = admin.key();
     hourglass_protocol.total_hourglasses = 0;
