@@ -88,6 +88,28 @@ class Hourglass {
                 .filter(({ account }) => new bn_js_1.default(account.ended).ltn(timestamp));
         });
     }
+    getAuction(hourglassId, auctionId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const address = Hourglass.deriveHourglassAuction(hourglassId, auctionId);
+            const auctionData = yield generated_1.HourglassAuction.fromAccountAddress(this.connection, address);
+            return auctionData;
+        });
+    }
+    getBids(hourglassId, auctionId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const bids = yield generated_1.UserAuctionAccount
+                .gpaBuilder()
+                .addFilter("accountDiscriminator", generated_1.userAuctionAccountDiscriminator)
+                .addFilter("hourglass", hourglassId)
+                .addFilter("auction", auctionId)
+                .run(this.connection);
+            return bids
+                .map(({ account, pubkey }) => ({
+                pubkey,
+                account: this.accountFromBuffer(generated_1.UserAuctionAccount, account)
+            }));
+        });
+    }
     getPastAuctions(hourglassId) {
         return __awaiter(this, void 0, void 0, function* () {
             const auctions = yield generated_1.HourglassAuction
@@ -148,6 +170,20 @@ class Hourglass {
             const hourglass = Hourglass.deriveHourglassAssociatedAccount(hourglassId);
             const hourglassAssociatedAccount = yield generated_1.HourglassAssociatedAccount.fromAccountAddress(this.connection, hourglass);
             return hourglassAssociatedAccount;
+        });
+    }
+    getOwnedHourglasses(owner) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const hourglasses = yield generated_1.HourglassAssociatedAccount
+                .gpaBuilder()
+                .addFilter("accountDiscriminator", generated_1.hourglassAssociatedAccountDiscriminator)
+                .addFilter("currentOwner", owner)
+                .run(this.connection);
+            return hourglasses
+                .map(({ account, pubkey }) => ({
+                pubkey,
+                account: this.accountFromBuffer(generated_1.HourglassAssociatedAccount, account)
+            }));
         });
     }
     createHourglass(signer, keypair) {
