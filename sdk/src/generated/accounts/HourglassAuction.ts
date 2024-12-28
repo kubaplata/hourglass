@@ -16,6 +16,7 @@ import * as beetSolana from '@metaplex-foundation/beet-solana'
  */
 export type HourglassAuctionArgs = {
   index: beet.bignum
+  hourglassId: beet.bignum
   claimed: boolean
   started: beet.bignum
   ended: beet.bignum
@@ -36,6 +37,7 @@ export const hourglassAuctionDiscriminator = [
 export class HourglassAuction implements HourglassAuctionArgs {
   private constructor(
     readonly index: beet.bignum,
+    readonly hourglassId: beet.bignum,
     readonly claimed: boolean,
     readonly started: beet.bignum,
     readonly ended: beet.bignum,
@@ -49,6 +51,7 @@ export class HourglassAuction implements HourglassAuctionArgs {
   static fromArgs(args: HourglassAuctionArgs) {
     return new HourglassAuction(
       args.index,
+      args.hourglassId,
       args.claimed,
       args.started,
       args.ended,
@@ -171,6 +174,17 @@ export class HourglassAuction implements HourglassAuctionArgs {
         }
         return x
       })(),
+      hourglassId: (() => {
+        const x = <{ toNumber: () => number }>this.hourglassId
+        if (typeof x.toNumber === 'function') {
+          try {
+            return x.toNumber()
+          } catch (_) {
+            return x
+          }
+        }
+        return x
+      })(),
       claimed: this.claimed,
       started: (() => {
         const x = <{ toNumber: () => number }>this.started
@@ -223,6 +237,7 @@ export const hourglassAuctionBeet = new beet.BeetStruct<
   [
     ['accountDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
     ['index', beet.u64],
+    ['hourglassId', beet.u64],
     ['claimed', beet.bool],
     ['started', beet.u64],
     ['ended', beet.u64],

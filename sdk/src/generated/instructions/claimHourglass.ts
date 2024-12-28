@@ -50,8 +50,6 @@ export const claimHourglassStruct = new beet.BeetArgsStruct<
  * @property [_writable_] userTaxAccount
  * @property [_writable_] hourglassVault
  * @property [_writable_] userHourglassAta
- * @property [_writable_] thread
- * @property [] clockworkProgram
  * @category Instructions
  * @category ClaimHourglass
  * @category generated
@@ -67,10 +65,8 @@ export type ClaimHourglassInstructionAccounts = {
   userTaxAccount: web3.PublicKey
   hourglassVault: web3.PublicKey
   userHourglassAta: web3.PublicKey
-  thread: web3.PublicKey
   tokenProgram?: web3.PublicKey
   systemProgram?: web3.PublicKey
-  clockworkProgram: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
@@ -149,22 +145,12 @@ export function createClaimHourglassInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.thread,
-      isWritable: true,
-      isSigner: false,
-    },
-    {
       pubkey: accounts.tokenProgram ?? splToken.TOKEN_PROGRAM_ID,
       isWritable: false,
       isSigner: false,
     },
     {
       pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.clockworkProgram,
       isWritable: false,
       isSigner: false,
     },

@@ -9,11 +9,28 @@ import {
     createClaimHourglassInstruction,
     createPayTaxInstruction,
     createPurchaseHourglassInstruction,
-    createValidateTaxInstruction
+    createValidateTaxInstruction,
+    HourglassAuction,
+    hourglassAuctionDiscriminator,
+    UserAuctionAccount,
+    userAuctionAccountDiscriminator,
+    Message,
+    UserTaxAccount,
+    HourglassCreatorAccount,
+    hourglassAssociatedAccountDiscriminator, messageDiscriminator, HourglassAssociatedAccountArgs
 } from "../generated";
-import {Connection, Keypair, PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY} from "@solana/web3.js";
+import {AccountInfo, Connection, Keypair, PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY} from "@solana/web3.js";
 import {ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID} from "@solana/spl-token";
 import BN from "bn.js";
+
+type HourglassProtocolAccount =
+    HourglassAuction |
+    HourglassAssociatedAccount |
+    Message |
+    UserTaxAccount |
+    UserAuctionAccount |
+    HourglassCreatorAccount |
+    HourglassProtocol;
 
 class Hourglass {
     private hourglassProtocol: PublicKey;
@@ -116,6 +133,95 @@ class Hourglass {
         return address;
     }
 
+    accountFromBuffer<T extends HourglassProtocolAccount>(
+        schema: { fromAccountInfo: (accountInfo: AccountInfo<Buffer>) => [T, number] },
+        accountInfo: AccountInfo<Buffer>
+    ): T {
+        return schema.fromAccountInfo(accountInfo)[0];
+    }
+
+    async getCurrentlyActiveAuctions() {
+        const unclaimedAuctions = await HourglassAuction
+            .gpaBuilder()
+            .addFilter("accountDiscriminator", hourglassAuctionDiscriminator)
+            .addFilter("claimed", false)
+            .run(this.connection);
+
+        const timestamp = Date.now();
+
+        return unclaimedAuctions
+            .map(({ account, pubkey }) => ({
+                pubkey,
+                account: this.accountFromBuffer(HourglassAuction, account)
+            }))
+            .filter(({ account }) => new BN(account.ended).ltn(timestamp));
+    }
+
+    async getPastAuctions(hourglassId: BN) {
+        const auctions = await HourglassAuction
+            .gpaBuilder()
+            .addFilter("accountDiscriminator", hourglassAuctionDiscriminator)
+            .addFilter("hourglassId", hourglassId.toNumber())
+            .run(this.connection);
+
+        return auctions
+            .map(({ account, pubkey }) => ({
+                pubkey,
+                account: this.accountFromBuffer(HourglassAuction, account)
+            }));
+    }
+
+    async getAllHourglasses() {
+        const hourglasses = await HourglassAssociatedAccount
+            .gpaBuilder()
+            .addFilter("accountDiscriminator", hourglassAssociatedAccountDiscriminator)
+            .run(this.connection);
+
+        return hourglasses
+            .map(({ account, pubkey }) => ({
+                pubkey,
+                account: this.accountFromBuffer(HourglassAssociatedAccount, account)
+            }));
+    }
+
+    async getAllUserBids(user: PublicKey) {
+        const bids = await UserAuctionAccount
+            .gpaBuilder()
+            .addFilter("accountDiscriminator", userAuctionAccountDiscriminator)
+            .addFilter("user", user)
+            .run(this.connection);
+
+        return bids
+            .map(({ account, pubkey }) => ({
+                pubkey,
+                account: this.accountFromBuffer(UserAuctionAccount, account)
+            }));
+    }
+
+    async getInvocations(hourglassId: BN) {
+        const invocations = await Message
+            .gpaBuilder()
+            .addFilter("accountDiscriminator", messageDiscriminator)
+            .addFilter("hourglassId", hourglassId.toNumber())
+            .run(this.connection);
+
+        return invocations
+            .map(({ account, pubkey }) => ({
+                pubkey,
+                account: this.accountFromBuffer(Message, account)
+            }));
+    }
+
+    async getHourglass(hourglassId: BN) {
+        const hourglass = Hourglass.deriveHourglassAssociatedAccount(hourglassId);
+        const hourglassAssociatedAccount = await HourglassAssociatedAccount.fromAccountAddress(
+            this.connection,
+            hourglass
+        );
+
+        return hourglassAssociatedAccount;
+    }
+
     async createHourglass(
         signer: PublicKey,
         keypair?: Keypair
@@ -168,22 +274,24 @@ class Hourglass {
                 associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID
             },
             {
-                hourglassId: totalHourglasses,
-                name: "Hourglass #1 - Toly",
-                auctionLength: 5 * 60,
-                gracePeriod: 0,
-                minimumBid: 0.1 * Math.pow(10, 6),
-                taxRate: 150,
-                ownershipPeriod: 7 * 60,
-                symbol: "HOURGLASS",
-                isPublic: true,
-                minimumSalePrice: 0.5 * Math.pow(10, 6),
-                service: [true, false, false, false, false, false, false, false],
-                metadataUri: "https://bafkreif4jnsgheen2vzjv4in76q2tegijggmzfijaplep45ir66gbygdui.ipfs.nftstorage.link/",
-                creatorName: "Anatoly Yakovenko",
-                description: "First Hourglass, initialized by Anatoly Yakovenko himself. Powered by Hourglass Protocol.",
-                image: "https://bafkreiefwviqmjyykws6k7oxckhr5lygywgau6ruscvhv5whyipyzrvwpi.ipfs.nftstorage.link/",
-                royalties: 500 // 5%
+                args: {
+                    hourglassId: totalHourglasses,
+                    name: "Hourglass #1 - Toly",
+                    auctionLength: 5 * 60,
+                    gracePeriod: 0,
+                    minimumBid: 0.1 * Math.pow(10, 6),
+                    taxRate: 150,
+                    ownershipPeriod: 7 * 60,
+                    symbol: "HOURGLASS",
+                    isPublic: true,
+                    minimumSalePrice: 0.5 * Math.pow(10, 6),
+                    service: [true, false, false, false, false, false, false, false],
+                    metadataUri: "https://bafkreif4jnsgheen2vzjv4in76q2tegijggmzfijaplep45ir66gbygdui.ipfs.nftstorage.link/",
+                    creatorName: "Anatoly Yakovenko",
+                    description: "First Hourglass, initialized by Anatoly Yakovenko himself. Powered by Hourglass Protocol.",
+                    image: "https://bafkreiefwviqmjyykws6k7oxckhr5lygywgau6ruscvhv5whyipyzrvwpi.ipfs.nftstorage.link/",
+                    royalties: 500 // 5%
+                }
             },
         );
 
@@ -463,7 +571,7 @@ class Hourglass {
                 sellerHourglassAta,
                 userTaxAccount,
                 hourglassAssociatedAccount,
-                creatorHourglassAccount,
+                creatorHourglassAccount: hourglassCreatorAccount,
                 systemProgram: SystemProgram.programId,
                 tokenProgram: TOKEN_2022_PROGRAM_ID,
             },

@@ -101,7 +101,6 @@ pub fn create_hourglass(
     hourglass_associated_account.next_auction_id = 0;
     hourglass_associated_account.current_owner = hourglass_associated_account.key();
     hourglass_associated_account.royalties = royalties;
-    hourglass_associated_account.clockwork_thread_id = 0;
     hourglass_associated_account.current_price = 0;
     hourglass_associated_account.grace_till = 0;
     hourglass_associated_account.owned_till = 0;

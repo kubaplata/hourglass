@@ -5,9 +5,9 @@
  * See: https://github.com/metaplex-foundation/solita
  */
 
+import * as beet from '@metaplex-foundation/beet'
 import * as web3 from '@solana/web3.js'
 import * as beetSolana from '@metaplex-foundation/beet-solana'
-import * as beet from '@metaplex-foundation/beet'
 
 /**
  * Arguments used to create {@link Message}
@@ -15,6 +15,8 @@ import * as beet from '@metaplex-foundation/beet'
  * @category generated
  */
 export type MessageArgs = {
+  hourglassId: beet.bignum
+  messageId: beet.bignum
   author: web3.PublicKey
   content: string
 }
@@ -29,6 +31,8 @@ export const messageDiscriminator = [110, 151, 23, 110, 198, 6, 125, 181]
  */
 export class Message implements MessageArgs {
   private constructor(
+    readonly hourglassId: beet.bignum,
+    readonly messageId: beet.bignum,
     readonly author: web3.PublicKey,
     readonly content: string
   ) {}
@@ -37,7 +41,12 @@ export class Message implements MessageArgs {
    * Creates a {@link Message} instance from the provided args.
    */
   static fromArgs(args: MessageArgs) {
-    return new Message(args.author, args.content)
+    return new Message(
+      args.hourglassId,
+      args.messageId,
+      args.author,
+      args.content
+    )
   }
 
   /**
@@ -145,6 +154,28 @@ export class Message implements MessageArgs {
    */
   pretty() {
     return {
+      hourglassId: (() => {
+        const x = <{ toNumber: () => number }>this.hourglassId
+        if (typeof x.toNumber === 'function') {
+          try {
+            return x.toNumber()
+          } catch (_) {
+            return x
+          }
+        }
+        return x
+      })(),
+      messageId: (() => {
+        const x = <{ toNumber: () => number }>this.messageId
+        if (typeof x.toNumber === 'function') {
+          try {
+            return x.toNumber()
+          } catch (_) {
+            return x
+          }
+        }
+        return x
+      })(),
       author: this.author.toBase58(),
       content: this.content,
     }
@@ -163,6 +194,8 @@ export const messageBeet = new beet.FixableBeetStruct<
 >(
   [
     ['accountDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
+    ['hourglassId', beet.u64],
+    ['messageId', beet.u64],
     ['author', beetSolana.publicKey],
     ['content', beet.utf8String],
   ],

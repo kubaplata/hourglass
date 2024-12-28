@@ -44,7 +44,6 @@ export const validateTaxStruct = new beet.BeetArgsStruct<
  * @property [_writable_] hourglassVault
  * @property [_writable_] hourglassMint
  * @property [_writable_] hourglassOwnerAta
- * @property [] clockworkProgram
  * @category Instructions
  * @category ValidateTax
  * @category generated
@@ -55,7 +54,6 @@ export type ValidateTaxInstructionAccounts = {
   hourglassVault: web3.PublicKey
   hourglassMint: web3.PublicKey
   hourglassOwnerAta: web3.PublicKey
-  clockworkProgram: web3.PublicKey
   systemProgram?: web3.PublicKey
   tokenProgram?: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
@@ -108,11 +106,6 @@ export function createValidateTaxInstruction(
     {
       pubkey: accounts.hourglassOwnerAta,
       isWritable: true,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.clockworkProgram,
-      isWritable: false,
       isSigner: false,
     },
     {

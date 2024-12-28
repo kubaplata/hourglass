@@ -40,13 +40,11 @@ export const payTaxStruct = new beet.BeetArgsStruct<
  * @property [_writable_] hourglassAssociatedAccount
  * @property [_writable_] userTaxAccount
  * @property [_writable_] userNextTaxAccount
- * @property [_writable_] currentThread
  * @property [_writable_] hourglassMint
  * @property [_writable_] hourglassVault
  * @property [_writable_] userHourglassAta
  * @property [_writable_] creatorHourglassAccount
  * @property [_writable_] creator
- * @property [] clockworkProgram
  * @category Instructions
  * @category PayTax
  * @category generated
@@ -56,7 +54,6 @@ export type PayTaxInstructionAccounts = {
   hourglassAssociatedAccount: web3.PublicKey
   userTaxAccount: web3.PublicKey
   userNextTaxAccount: web3.PublicKey
-  currentThread: web3.PublicKey
   hourglassMint: web3.PublicKey
   hourglassVault: web3.PublicKey
   userHourglassAta: web3.PublicKey
@@ -64,7 +61,6 @@ export type PayTaxInstructionAccounts = {
   creator: web3.PublicKey
   tokenProgram?: web3.PublicKey
   systemProgram?: web3.PublicKey
-  clockworkProgram: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
@@ -111,11 +107,6 @@ export function createPayTaxInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.currentThread,
-      isWritable: true,
-      isSigner: false,
-    },
-    {
       pubkey: accounts.hourglassMint,
       isWritable: true,
       isSigner: false,
@@ -147,11 +138,6 @@ export function createPayTaxInstruction(
     },
     {
       pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.clockworkProgram,
       isWritable: false,
       isSigner: false,
     },

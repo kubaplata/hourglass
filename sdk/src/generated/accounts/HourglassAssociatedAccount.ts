@@ -30,7 +30,6 @@ export type HourglassAssociatedAccountArgs = {
   currentPrice: beet.bignum
   ownedTill: beet.bignum
   graceTill: beet.bignum
-  clockworkThreadId: beet.bignum
   ownershipPeriodIndex: beet.bignum
   royalties: beet.bignum
   messageId: beet.bignum
@@ -65,7 +64,6 @@ export class HourglassAssociatedAccount
     readonly currentPrice: beet.bignum,
     readonly ownedTill: beet.bignum,
     readonly graceTill: beet.bignum,
-    readonly clockworkThreadId: beet.bignum,
     readonly ownershipPeriodIndex: beet.bignum,
     readonly royalties: beet.bignum,
     readonly messageId: beet.bignum
@@ -91,7 +89,6 @@ export class HourglassAssociatedAccount
       args.currentPrice,
       args.ownedTill,
       args.graceTill,
-      args.clockworkThreadId,
       args.ownershipPeriodIndex,
       args.royalties,
       args.messageId
@@ -324,17 +321,6 @@ export class HourglassAssociatedAccount
         }
         return x
       })(),
-      clockworkThreadId: (() => {
-        const x = <{ toNumber: () => number }>this.clockworkThreadId
-        if (typeof x.toNumber === 'function') {
-          try {
-            return x.toNumber()
-          } catch (_) {
-            return x
-          }
-        }
-        return x
-      })(),
       ownershipPeriodIndex: (() => {
         const x = <{ toNumber: () => number }>this.ownershipPeriodIndex
         if (typeof x.toNumber === 'function') {
@@ -399,7 +385,6 @@ export const hourglassAssociatedAccountBeet = new beet.BeetStruct<
     ['currentPrice', beet.u64],
     ['ownedTill', beet.u64],
     ['graceTill', beet.u64],
-    ['clockworkThreadId', beet.u64],
     ['ownershipPeriodIndex', beet.u64],
     ['royalties', beet.u64],
     ['messageId', beet.u64],

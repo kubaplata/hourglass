@@ -5,8 +5,8 @@
  * See: https://github.com/metaplex-foundation/solita
  */
 
-import * as beet from '@metaplex-foundation/beet'
 import * as web3 from '@solana/web3.js'
+import * as beet from '@metaplex-foundation/beet'
 import * as beetSolana from '@metaplex-foundation/beet-solana'
 
 /**
@@ -15,6 +15,9 @@ import * as beetSolana from '@metaplex-foundation/beet-solana'
  * @category generated
  */
 export type UserAuctionAccountArgs = {
+  user: web3.PublicKey
+  hourglass: beet.bignum
+  auction: beet.bignum
   bid: beet.bignum
   cancelled: boolean
   bidTimestamp: beet.bignum
@@ -32,6 +35,9 @@ export const userAuctionAccountDiscriminator = [
  */
 export class UserAuctionAccount implements UserAuctionAccountArgs {
   private constructor(
+    readonly user: web3.PublicKey,
+    readonly hourglass: beet.bignum,
+    readonly auction: beet.bignum,
     readonly bid: beet.bignum,
     readonly cancelled: boolean,
     readonly bidTimestamp: beet.bignum
@@ -41,7 +47,14 @@ export class UserAuctionAccount implements UserAuctionAccountArgs {
    * Creates a {@link UserAuctionAccount} instance from the provided args.
    */
   static fromArgs(args: UserAuctionAccountArgs) {
-    return new UserAuctionAccount(args.bid, args.cancelled, args.bidTimestamp)
+    return new UserAuctionAccount(
+      args.user,
+      args.hourglass,
+      args.auction,
+      args.bid,
+      args.cancelled,
+      args.bidTimestamp
+    )
   }
 
   /**
@@ -147,6 +160,29 @@ export class UserAuctionAccount implements UserAuctionAccountArgs {
    */
   pretty() {
     return {
+      user: this.user.toBase58(),
+      hourglass: (() => {
+        const x = <{ toNumber: () => number }>this.hourglass
+        if (typeof x.toNumber === 'function') {
+          try {
+            return x.toNumber()
+          } catch (_) {
+            return x
+          }
+        }
+        return x
+      })(),
+      auction: (() => {
+        const x = <{ toNumber: () => number }>this.auction
+        if (typeof x.toNumber === 'function') {
+          try {
+            return x.toNumber()
+          } catch (_) {
+            return x
+          }
+        }
+        return x
+      })(),
       bid: (() => {
         const x = <{ toNumber: () => number }>this.bid
         if (typeof x.toNumber === 'function') {
@@ -186,6 +222,9 @@ export const userAuctionAccountBeet = new beet.BeetStruct<
 >(
   [
     ['accountDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
+    ['user', beetSolana.publicKey],
+    ['hourglass', beet.u64],
+    ['auction', beet.u64],
     ['bid', beet.u64],
     ['cancelled', beet.bool],
     ['bidTimestamp', beet.u64],

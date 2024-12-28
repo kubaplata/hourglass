@@ -8,6 +8,10 @@
 import * as splToken from '@solana/spl-token'
 import * as beet from '@metaplex-foundation/beet'
 import * as web3 from '@solana/web3.js'
+import {
+  CreateHourglassArgs,
+  createHourglassArgsBeet,
+} from '../types/CreateHourglassArgs'
 
 /**
  * @category Instructions
@@ -15,22 +19,7 @@ import * as web3 from '@solana/web3.js'
  * @category generated
  */
 export type CreateHourglassInstructionArgs = {
-  hourglassId: beet.bignum
-  name: string
-  symbol: string
-  metadataUri: string
-  description: string
-  image: string
-  creatorName: string
-  service: boolean[] /* size: 8 */
-  isPublic: boolean
-  auctionLength: beet.bignum
-  ownershipPeriod: beet.bignum
-  gracePeriod: beet.bignum
-  minimumSalePrice: beet.bignum
-  minimumBid: beet.bignum
-  taxRate: beet.bignum
-  royalties: beet.bignum
+  args: CreateHourglassArgs
 }
 /**
  * @category Instructions
@@ -44,22 +33,7 @@ export const createHourglassStruct = new beet.FixableBeetArgsStruct<
 >(
   [
     ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['hourglassId', beet.u64],
-    ['name', beet.utf8String],
-    ['symbol', beet.utf8String],
-    ['metadataUri', beet.utf8String],
-    ['description', beet.utf8String],
-    ['image', beet.utf8String],
-    ['creatorName', beet.utf8String],
-    ['service', beet.uniformFixedSizeArray(beet.bool, 8)],
-    ['isPublic', beet.bool],
-    ['auctionLength', beet.u64],
-    ['ownershipPeriod', beet.u64],
-    ['gracePeriod', beet.u64],
-    ['minimumSalePrice', beet.u64],
-    ['minimumBid', beet.u64],
-    ['taxRate', beet.u64],
-    ['royalties', beet.u64],
+    ['args', createHourglassArgsBeet],
   ],
   'CreateHourglassInstructionArgs'
 )

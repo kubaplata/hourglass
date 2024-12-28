@@ -102,9 +102,6 @@ pub fn claim_hourglass(
     // List the Hourglass on the free market
     hourglass_associated_account.current_price = instant_sell_price;
 
-    // After claiming auction, increase Clockwork thread ID by one.
-    hourglass_associated_account.clockwork_thread_id += 1;
-
     // Also increase ownership period index.
     hourglass_associated_account.ownership_period_index += 1;
 
