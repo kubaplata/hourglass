@@ -42,8 +42,6 @@ pub fn validate_tax(
         HourglassError::OwnershipPeriodNotEnded
     );
 
-    // This instruction should only be triggered if tax is unpaid.
-    // To be sure, we will check this (likely unnecessary kekw) 
     if (!user_tax_account.paid_tax) {
         // Tax unpaid - bring back the hourglass.
         hourglass_associated_account.current_owner = hourglass_associated_account.key();

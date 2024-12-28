@@ -1,0 +1,23 @@
+export * from './Hourglass';
+export * from './HourglassAssociatedAccount';
+export * from './HourglassAuction';
+export * from './HourglassCreatorAccount';
+export * from './Message';
+export * from './UserAuctionAccount';
+export * from './UserTaxAccount';
+import { HourglassAssociatedAccount } from './HourglassAssociatedAccount';
+import { HourglassAuction } from './HourglassAuction';
+import { HourglassCreatorAccount } from './HourglassCreatorAccount';
+import { Hourglass } from './Hourglass';
+import { Message } from './Message';
+import { UserAuctionAccount } from './UserAuctionAccount';
+import { UserTaxAccount } from './UserTaxAccount';
+export declare const accountProviders: {
+    HourglassAssociatedAccount: typeof HourglassAssociatedAccount;
+    HourglassAuction: typeof HourglassAuction;
+    HourglassCreatorAccount: typeof HourglassCreatorAccount;
+    Hourglass: typeof Hourglass;
+    Message: typeof Message;
+    UserAuctionAccount: typeof UserAuctionAccount;
+    UserTaxAccount: typeof UserTaxAccount;
+};

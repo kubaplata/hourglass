@@ -157,6 +157,30 @@ class Hourglass {
             .filter(({ account }) => new BN(account.ended).ltn(timestamp));
     }
 
+    async getAuction(hourglassId: BN, auctionId: BN) {
+        const address = Hourglass.deriveHourglassAuction(hourglassId, auctionId);
+        const auctionData = await HourglassAuction.fromAccountAddress(
+            this.connection,
+            address
+        );
+        return auctionData;
+    }
+
+    async getBids(hourglassId: BN, auctionId: BN) {
+        const bids = await UserAuctionAccount
+            .gpaBuilder()
+            .addFilter("accountDiscriminator", userAuctionAccountDiscriminator)
+            .addFilter("hourglass", hourglassId)
+            .addFilter("auction", auctionId)
+            .run(this.connection);
+
+        return bids
+            .map(({ account, pubkey }) => ({
+                pubkey,
+                account: this.accountFromBuffer(UserAuctionAccount, account)
+            }));
+    }
+
     async getPastAuctions(hourglassId: BN) {
         const auctions = await HourglassAuction
             .gpaBuilder()
@@ -220,6 +244,20 @@ class Hourglass {
         );
 
         return hourglassAssociatedAccount;
+    }
+
+    async getOwnedHourglasses(owner: PublicKey) {
+        const hourglasses = await HourglassAssociatedAccount
+            .gpaBuilder()
+            .addFilter("accountDiscriminator", hourglassAssociatedAccountDiscriminator)
+            .addFilter("currentOwner", owner)
+            .run(this.connection);
+
+        return hourglasses
+            .map(({ account, pubkey }) => ({
+                pubkey,
+                account: this.accountFromBuffer(HourglassAssociatedAccount, account)
+            }));
     }
 
     async createHourglass(
