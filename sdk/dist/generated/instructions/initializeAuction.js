@@ -56,7 +56,7 @@ exports.initializeAuctionInstructionDiscriminator = [
  * @category InitializeAuction
  * @category generated
  */
-function createInitializeAuctionInstruction(accounts, args, programId = new web3.PublicKey('83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij')) {
+function createInitializeAuctionInstruction(accounts, args, programId = new web3.PublicKey('HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6')) {
     var _a, _b;
     const [data] = exports.initializeAuctionStruct.serialize(Object.assign({ instructionDiscriminator: exports.initializeAuctionInstructionDiscriminator }, args));
     const keys = [

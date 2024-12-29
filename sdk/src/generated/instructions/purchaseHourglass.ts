@@ -83,7 +83,7 @@ export const purchaseHourglassInstructionDiscriminator = [
 export function createPurchaseHourglassInstruction(
   accounts: PurchaseHourglassInstructionAccounts,
   args: PurchaseHourglassInstructionArgs,
-  programId = new web3.PublicKey('83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij')
+  programId = new web3.PublicKey('HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6')
 ) {
   const [data] = purchaseHourglassStruct.serialize({
     instructionDiscriminator: purchaseHourglassInstructionDiscriminator,

@@ -97,7 +97,7 @@ export class UserAuctionAccount implements UserAuctionAccountArgs {
    */
   static gpaBuilder(
     programId: web3.PublicKey = new web3.PublicKey(
-      '83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij'
+      'HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6'
     )
   ) {
     return beetSolana.GpaBuilder.fromStruct(programId, userAuctionAccountBeet)

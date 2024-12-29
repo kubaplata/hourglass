@@ -73,7 +73,7 @@ export const initializeAuctionInstructionDiscriminator = [
 export function createInitializeAuctionInstruction(
   accounts: InitializeAuctionInstructionAccounts,
   args: InitializeAuctionInstructionArgs,
-  programId = new web3.PublicKey('83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij')
+  programId = new web3.PublicKey('HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6')
 ) {
   const [data] = initializeAuctionStruct.serialize({
     instructionDiscriminator: initializeAuctionInstructionDiscriminator,

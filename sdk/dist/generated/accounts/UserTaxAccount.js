@@ -89,7 +89,7 @@ class UserTaxAccount {
      *
      * @param programId - the program that owns the accounts we are filtering
      */
-    static gpaBuilder(programId = new web3.PublicKey('83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij')) {
+    static gpaBuilder(programId = new web3.PublicKey('HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6')) {
         return beetSolana.GpaBuilder.fromStruct(programId, exports.userTaxAccountBeet);
     }
     /**

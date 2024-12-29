@@ -119,6 +119,17 @@ export declare class InvalidMessageOrderError extends Error {
     constructor();
 }
 /**
+ * InvalidFeeBps: 'InvalidFeeBps'
+ *
+ * @category Errors
+ * @category generated
+ */
+export declare class InvalidFeeBpsError extends Error {
+    readonly code: number;
+    readonly name: string;
+    constructor();
+}
+/**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors
  * @category generated

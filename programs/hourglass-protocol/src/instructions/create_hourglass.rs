@@ -1,7 +1,8 @@
-use anchor_lang::solana_program::address_lookup_table::instruction;
 use anchor_lang::solana_program::program::invoke;
-use anchor_lang::{prelude::*, solana_program::program::invoke_signed, solana_program::system_instruction::transfer};
+use anchor_lang::{prelude::*, solana_program::program::invoke_signed};
+use anchor_lang::system_program::{ transfer, Transfer };
 use anchor_spl::associated_token::{self, AssociatedToken};
+use anchor_spl::token::Token;
 use anchor_spl::token_2022::spl_token_2022::instruction::AuthorityType;
 use crate::{states::*, errors::*};
 use anchor_spl::{token::{ Mint, TokenAccount }, token_interface::TokenInterface};
@@ -17,7 +18,6 @@ use anchor_spl::token_interface:: {
         instruction::mint_to,
         extension::metadata_pointer,
     }
-    
 };
 use spl_token_metadata_interface::state::TokenMetadata;
 use spl_token_metadata_interface::state::Field;
@@ -32,14 +32,12 @@ pub struct CreateHourglassArgs {
     pub description: String,
     pub image: String,
     pub creator_name: String,
-    pub service: [bool; 8],
-    pub is_public: bool,
     pub auction_length: u64,
     pub ownership_period: u64,
     pub grace_period: u64,
     pub minimum_sale_price: u64,
     pub minimum_bid: u64,
-    pub tax_rate: u64,
+    pub tax_rate_bps: u64,
     pub royalties: u64,
 }
 
@@ -56,22 +54,20 @@ pub fn create_hourglass(
         description,
         image,
         creator_name,
-        service,
         auction_length,
         ownership_period,
         grace_period,
         minimum_sale_price,
         minimum_bid,
-        tax_rate,
+        tax_rate_bps,
         royalties,
-        is_public
     } = args;
 
     let creator = &ctx.accounts.creator;
     let hourglass_protocol = &mut ctx.accounts.hourglass_protocol;
     let hourglass_associated_account = &mut ctx.accounts.hourglass_associated_account;
     let mint = &ctx.accounts.hourglass_mint;
-    let token_program = &mut ctx.accounts.token_program;
+    let token_program = &mut ctx.accounts.token_2022_program;
     let associated_token_program = &ctx.accounts.associated_token_program;
     let rent_program = &ctx.accounts.rent_program;
     let hourglass_vault = &ctx.accounts.hourglass_vault;
@@ -88,14 +84,12 @@ pub fn create_hourglass(
     );
 
     hourglass_protocol.total_hourglasses += 1;
-    hourglass_associated_account.service = service;
-    hourglass_associated_account.is_public = is_public;
     hourglass_associated_account.auction_length = auction_length;
     hourglass_associated_account.ownership_period = ownership_period;
     hourglass_associated_account.grace_period = grace_period;
     hourglass_associated_account.minimum_sale_price = minimum_sale_price;
     hourglass_associated_account.minimum_bid = minimum_bid;
-    hourglass_associated_account.tax_rate = tax_rate;
+    hourglass_associated_account.tax_rate_bps = tax_rate_bps;
     hourglass_associated_account.creator = creator.key();
     hourglass_associated_account.hourglass = mint.key();
     hourglass_associated_account.next_auction_id = 0;
@@ -119,11 +113,7 @@ pub fn create_hourglass(
             ),
             (
                 String::from("seller_fee_basis_points"),
-                String::from("0")
-            ),
-            (
-                String::from("seller_fee_basis_points"),
-                String::from("0")
+                royalties.to_string()
             ),
             (
                 String::from("image"),
@@ -140,22 +130,20 @@ pub fn create_hourglass(
 
     let size_of_metadata: usize = token_metadata.tlv_size_of()?;
 
-    let transfer_ix = transfer(
-        &creator.key(),
-        &mint.key(),
+    transfer(
+        CpiContext::new(
+            system_program.to_account_info(), 
+            Transfer {
+                from: creator.to_account_info(),
+                to: mint.to_account_info()
+            }
+        ), 
         Rent::get()?.minimum_balance(
             size_of_metadata
-        )
-    );
-
-    invoke(
-        &transfer_ix, 
-        &[
-            creator.to_account_info(), 
-            mint.to_account_info(), 
-            system_program.to_account_info()
-        ]
+        ),
     )?;
+
+    msg!("Transferred rent");
 
     let initialize_delegate_ix = initialize_permanent_delegate(
         &token_program.key(), 
@@ -187,6 +175,8 @@ pub fn create_hourglass(
         &[signer_seeds]
     )?;
 
+    msg!("initialized delegate");
+
     invoke_signed(
         &initialize_metadata_pointer_ix, 
         &[
@@ -196,6 +186,8 @@ pub fn create_hourglass(
         ], 
         &[signer_seeds]
     )?;
+
+    msg!("initialized metadata");
     
     initialize_mint(
         CpiContext::new(
@@ -209,6 +201,8 @@ pub fn create_hourglass(
         &creator.key(),
         Some(&hourglass_associated_account.key())
     )?;
+
+    msg!("initialized mint");
 
     let initialize_metadata_ix = spl_token_metadata_interface::instruction::initialize(
         &token_program.key(),
@@ -231,8 +225,8 @@ pub fn create_hourglass(
         ]
     )?;
 
-    // Initialize doesn't let us insert additional metadata, so we're 
-    // gonna do it in second instruction right away.
+    msg!("initialized metadata");
+
     for field in token_metadata.additional_metadata {
         invoke_signed(
             &spl_token_metadata_interface::instruction::update_field(
@@ -251,6 +245,8 @@ pub fn create_hourglass(
         )?;
     }
 
+    msg!("initialized optional metadata fields");
+
     associated_token::create(
         CpiContext::new(
             associated_token_program.to_account_info(),
@@ -264,6 +260,8 @@ pub fn create_hourglass(
             }
         )
     )?;
+
+    msg!("created hourglass vault");
 
     invoke(
         &mint_to(
@@ -285,6 +283,8 @@ pub fn create_hourglass(
         ] 
     )?;
 
+    msg!("minted hourglass");
+
     set_authority(
         CpiContext::new(
             token_program.to_account_info(), 
@@ -296,6 +296,8 @@ pub fn create_hourglass(
         AuthorityType::MintTokens,
         None
     )?;
+
+    msg!("frozen all minting in the future");
 
     Ok(())
 }
@@ -314,19 +316,21 @@ pub struct CreateHourglass<'info> {
         payer = creator,
         space = ExtensionType
             ::try_calculate_account_len
-            ::<state::Mint>(&[ 
+            ::<state::Mint>(&[
                 ExtensionType::MetadataPointer, 
                 ExtensionType::PermanentDelegate
             ])?,
             
-        owner = token_program.key(),
-        mint::token_program = token_program,
+        owner = token_2022_program.key(),
+        mint::token_program = token_2022_program,
     )]
     pub hourglass_mint: AccountInfo<'info>,
 
     #[account(
         mut,
-        seeds = ["hourglass_protocol".as_bytes()],
+        seeds = [
+            "hourglass_protocol".as_bytes()
+        ],
         bump
     )]
     pub hourglass_protocol: Box<Account<'info, Hourglass>>,
@@ -334,8 +338,11 @@ pub struct CreateHourglass<'info> {
     #[account(
         init_if_needed,
         payer = creator,
-        space = 8 + (2 * 8) + 4 + (10 * 32) + 32,
-        seeds = [b"hourglass_creator_account", creator.key().as_ref()],
+        space = HourglassCreatorAccount::SIZE,
+        seeds = [
+            "hourglass_creator_account".as_bytes(), 
+            creator.key().as_ref()
+        ],
         bump
     )]
     pub creator_hourglass_account: Box<Account<'info, HourglassCreatorAccount>>,
@@ -343,7 +350,7 @@ pub struct CreateHourglass<'info> {
     #[account(
         init,
         payer = creator,
-        space = 8 + (15 * 8) + 1 + (3 * 32),
+        space = HourglassAssociatedAccount::SIZE,
         seeds = [
             "hourglass_associated_account".as_bytes(), 
             &hourglass_protocol.total_hourglasses.to_be_bytes()
@@ -352,25 +359,20 @@ pub struct CreateHourglass<'info> {
     )]
     pub hourglass_associated_account: Box<Account<'info, HourglassAssociatedAccount>>,
 
-    /// CHECK: Safe since CPI to Associated Token Program will check this account.
+    /// CHECK: Will be checked by CPI later
     #[account(
         mut,
     )]
     pub hourglass_vault: AccountInfo<'info>,
     
+    // Any mint that creator wants their hourglass traded in.
     #[account(
         mut,
-        constraint = fee_settlement_token.key() == hourglass_protocol.fee_settlement_token
+        mint::token_program = token_program,
     )]
-    pub fee_settlement_token: Box<Account<'info, Mint>>,
+    pub settlement_token: Box<Account<'info, Mint>>,
 
-    #[account(
-        mut,
-        constraint = creator_fee_settlement_token_account.owner == creator.key(),
-        constraint = creator_fee_settlement_token_account.mint == fee_settlement_token.key()
-    )]
-    pub creator_fee_settlement_token_account: Box<Account<'info, TokenAccount>>,
-
+    pub token_2022_program: Interface<'info, TokenInterface>,
     pub token_program: Interface<'info, TokenInterface>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,

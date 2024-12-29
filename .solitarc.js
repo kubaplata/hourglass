@@ -7,7 +7,7 @@ const binaryInstallDir = path.join(__dirname, '.crates');
 module.exports = {
   idlGenerator: 'anchor',
   programName: 'hourglass_protocol',
-  programId: '83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij',
+  programId: 'HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6',
   idlDir,
   sdkDir,
   binaryInstallDir,

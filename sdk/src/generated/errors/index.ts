@@ -235,6 +235,26 @@ createErrorFromNameLookup.set(
 )
 
 /**
+ * InvalidFeeBps: 'InvalidFeeBps'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class InvalidFeeBpsError extends Error {
+  readonly code: number = 0x177a
+  readonly name: string = 'InvalidFeeBps'
+  constructor() {
+    super('InvalidFeeBps')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, InvalidFeeBpsError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x177a, () => new InvalidFeeBpsError())
+createErrorFromNameLookup.set('InvalidFeeBps', () => new InvalidFeeBpsError())
+
+/**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors
  * @category generated

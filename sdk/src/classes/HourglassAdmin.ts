@@ -10,7 +10,6 @@ class HourglassAdmin {
     static initializeProtocol(
         signer: PublicKey,
         feeBps: BN,
-        settlementToken: PublicKey,
     ) {
 
         const [hourglassProtocol] = PublicKey.findProgramAddressSync(
@@ -20,26 +19,12 @@ class HourglassAdmin {
             PROGRAM_ID
         );
 
-        const feeCollector = getAssociatedTokenAddressSync(
-            settlementToken,
-            hourglassProtocol,
-            true
-        );
-
-        const initializeFeeCollectorInstruction = createAssociatedTokenAccountInstruction(
-            signer,
-            feeCollector,
-            hourglassProtocol,
-            settlementToken
-        );
-
         const initializeProtocolInstruction = createInitializeProtocolInstruction(
             {
                 admin: signer,
                 hourglassProtocol,
                 systemProgram: SystemProgram.programId,
-                feeSettlementToken: settlementToken,
-                feeCollector,
+                feeCollector: signer,
             },
             {
                 fee: feeBps
@@ -47,7 +32,6 @@ class HourglassAdmin {
         );
 
         return [
-            initializeFeeCollectorInstruction,
             initializeProtocolInstruction
         ];
     }

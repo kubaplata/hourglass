@@ -87,7 +87,7 @@ export const claimHourglassInstructionDiscriminator = [
 export function createClaimHourglassInstruction(
   accounts: ClaimHourglassInstructionAccounts,
   args: ClaimHourglassInstructionArgs,
-  programId = new web3.PublicKey('83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij')
+  programId = new web3.PublicKey('HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6')
 ) {
   const [data] = claimHourglassStruct.serialize({
     instructionDiscriminator: claimHourglassInstructionDiscriminator,

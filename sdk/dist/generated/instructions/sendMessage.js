@@ -57,7 +57,7 @@ exports.sendMessageInstructionDiscriminator = [
  * @category SendMessage
  * @category generated
  */
-function createSendMessageInstruction(accounts, args, programId = new web3.PublicKey('83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij')) {
+function createSendMessageInstruction(accounts, args, programId = new web3.PublicKey('HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6')) {
     var _a;
     const [data] = exports.sendMessageStruct.serialize(Object.assign({ instructionDiscriminator: exports.sendMessageInstructionDiscriminator }, args));
     const keys = [

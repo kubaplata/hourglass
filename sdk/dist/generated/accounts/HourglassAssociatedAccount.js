@@ -39,8 +39,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.hourglassAssociatedAccountBeet = exports.HourglassAssociatedAccount = exports.hourglassAssociatedAccountDiscriminator = void 0;
-const beet = __importStar(require("@metaplex-foundation/beet"));
 const web3 = __importStar(require("@solana/web3.js"));
+const beet = __importStar(require("@metaplex-foundation/beet"));
 const beetSolana = __importStar(require("@metaplex-foundation/beet-solana"));
 exports.hourglassAssociatedAccountDiscriminator = [
     244, 98, 244, 176, 83, 46, 242, 63,
@@ -53,17 +53,16 @@ exports.hourglassAssociatedAccountDiscriminator = [
  * @category generated
  */
 class HourglassAssociatedAccount {
-    constructor(service /* size: 8 */, isPublic, auctionLength, ownershipPeriod, gracePeriod, minimumSalePrice, minimumBid, taxRate, hourglass, creator, nextAuctionId, currentOwner, currentPrice, ownedTill, graceTill, ownershipPeriodIndex, royalties, messageId) {
-        this.service = service;
-        this.isPublic = isPublic;
+    constructor(hourglass, creator, settlementToken, auctionLength, ownershipPeriod, gracePeriod, minimumSalePrice, minimumBid, taxRateBps, nextAuctionId, currentOwner, currentPrice, ownedTill, graceTill, ownershipPeriodIndex, royalties, messageId) {
+        this.hourglass = hourglass;
+        this.creator = creator;
+        this.settlementToken = settlementToken;
         this.auctionLength = auctionLength;
         this.ownershipPeriod = ownershipPeriod;
         this.gracePeriod = gracePeriod;
         this.minimumSalePrice = minimumSalePrice;
         this.minimumBid = minimumBid;
-        this.taxRate = taxRate;
-        this.hourglass = hourglass;
-        this.creator = creator;
+        this.taxRateBps = taxRateBps;
         this.nextAuctionId = nextAuctionId;
         this.currentOwner = currentOwner;
         this.currentPrice = currentPrice;
@@ -77,7 +76,7 @@ class HourglassAssociatedAccount {
      * Creates a {@link HourglassAssociatedAccount} instance from the provided args.
      */
     static fromArgs(args) {
-        return new HourglassAssociatedAccount(args.service, args.isPublic, args.auctionLength, args.ownershipPeriod, args.gracePeriod, args.minimumSalePrice, args.minimumBid, args.taxRate, args.hourglass, args.creator, args.nextAuctionId, args.currentOwner, args.currentPrice, args.ownedTill, args.graceTill, args.ownershipPeriodIndex, args.royalties, args.messageId);
+        return new HourglassAssociatedAccount(args.hourglass, args.creator, args.settlementToken, args.auctionLength, args.ownershipPeriod, args.gracePeriod, args.minimumSalePrice, args.minimumBid, args.taxRateBps, args.nextAuctionId, args.currentOwner, args.currentPrice, args.ownedTill, args.graceTill, args.ownershipPeriodIndex, args.royalties, args.messageId);
     }
     /**
      * Deserializes the {@link HourglassAssociatedAccount} from the data of the provided {@link web3.AccountInfo}.
@@ -107,7 +106,7 @@ class HourglassAssociatedAccount {
      *
      * @param programId - the program that owns the accounts we are filtering
      */
-    static gpaBuilder(programId = new web3.PublicKey('83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij')) {
+    static gpaBuilder(programId = new web3.PublicKey('HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6')) {
         return beetSolana.GpaBuilder.fromStruct(programId, exports.hourglassAssociatedAccountBeet);
     }
     /**
@@ -155,8 +154,9 @@ class HourglassAssociatedAccount {
      */
     pretty() {
         return {
-            service: this.service,
-            isPublic: this.isPublic,
+            hourglass: this.hourglass.toBase58(),
+            creator: this.creator.toBase58(),
+            settlementToken: this.settlementToken.toBase58(),
             auctionLength: (() => {
                 const x = this.auctionLength;
                 if (typeof x.toNumber === 'function') {
@@ -217,8 +217,8 @@ class HourglassAssociatedAccount {
                 }
                 return x;
             })(),
-            taxRate: (() => {
-                const x = this.taxRate;
+            taxRateBps: (() => {
+                const x = this.taxRateBps;
                 if (typeof x.toNumber === 'function') {
                     try {
                         return x.toNumber();
@@ -229,8 +229,6 @@ class HourglassAssociatedAccount {
                 }
                 return x;
             })(),
-            hourglass: this.hourglass.toBase58(),
-            creator: this.creator.toBase58(),
             nextAuctionId: (() => {
                 const x = this.nextAuctionId;
                 if (typeof x.toNumber === 'function') {
@@ -326,16 +324,15 @@ exports.HourglassAssociatedAccount = HourglassAssociatedAccount;
  */
 exports.hourglassAssociatedAccountBeet = new beet.BeetStruct([
     ['accountDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['service', beet.uniformFixedSizeArray(beet.bool, 8)],
-    ['isPublic', beet.bool],
+    ['hourglass', beetSolana.publicKey],
+    ['creator', beetSolana.publicKey],
+    ['settlementToken', beetSolana.publicKey],
     ['auctionLength', beet.u64],
     ['ownershipPeriod', beet.u64],
     ['gracePeriod', beet.u64],
     ['minimumSalePrice', beet.u64],
     ['minimumBid', beet.u64],
-    ['taxRate', beet.u64],
-    ['hourglass', beetSolana.publicKey],
-    ['creator', beetSolana.publicKey],
+    ['taxRateBps', beet.u64],
     ['nextAuctionId', beet.u64],
     ['currentOwner', beetSolana.publicKey],
     ['currentPrice', beet.u64],

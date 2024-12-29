@@ -4,8 +4,8 @@
  *
  * See: https://github.com/metaplex-foundation/solita
  */
-import * as beet from '@metaplex-foundation/beet';
 import * as web3 from '@solana/web3.js';
+import * as beet from '@metaplex-foundation/beet';
 import * as beetSolana from '@metaplex-foundation/beet-solana';
 /**
  * Arguments used to create {@link HourglassAssociatedAccount}
@@ -13,16 +13,15 @@ import * as beetSolana from '@metaplex-foundation/beet-solana';
  * @category generated
  */
 export type HourglassAssociatedAccountArgs = {
-    service: boolean[];
-    isPublic: boolean;
+    hourglass: web3.PublicKey;
+    creator: web3.PublicKey;
+    settlementToken: web3.PublicKey;
     auctionLength: beet.bignum;
     ownershipPeriod: beet.bignum;
     gracePeriod: beet.bignum;
     minimumSalePrice: beet.bignum;
     minimumBid: beet.bignum;
-    taxRate: beet.bignum;
-    hourglass: web3.PublicKey;
-    creator: web3.PublicKey;
+    taxRateBps: beet.bignum;
     nextAuctionId: beet.bignum;
     currentOwner: web3.PublicKey;
     currentPrice: beet.bignum;
@@ -41,16 +40,15 @@ export declare const hourglassAssociatedAccountDiscriminator: number[];
  * @category generated
  */
 export declare class HourglassAssociatedAccount implements HourglassAssociatedAccountArgs {
-    readonly service: boolean[];
-    readonly isPublic: boolean;
+    readonly hourglass: web3.PublicKey;
+    readonly creator: web3.PublicKey;
+    readonly settlementToken: web3.PublicKey;
     readonly auctionLength: beet.bignum;
     readonly ownershipPeriod: beet.bignum;
     readonly gracePeriod: beet.bignum;
     readonly minimumSalePrice: beet.bignum;
     readonly minimumBid: beet.bignum;
-    readonly taxRate: beet.bignum;
-    readonly hourglass: web3.PublicKey;
-    readonly creator: web3.PublicKey;
+    readonly taxRateBps: beet.bignum;
     readonly nextAuctionId: beet.bignum;
     readonly currentOwner: web3.PublicKey;
     readonly currentPrice: beet.bignum;
@@ -84,16 +82,15 @@ export declare class HourglassAssociatedAccount implements HourglassAssociatedAc
      */
     static gpaBuilder(programId?: web3.PublicKey): beetSolana.GpaBuilder<{
         accountDiscriminator: any;
-        service: any;
-        isPublic: any;
+        hourglass: any;
+        creator: any;
+        settlementToken: any;
         auctionLength: any;
         ownershipPeriod: any;
         gracePeriod: any;
         minimumSalePrice: any;
         minimumBid: any;
-        taxRate: any;
-        hourglass: any;
-        creator: any;
+        taxRateBps: any;
         nextAuctionId: any;
         currentOwner: any;
         currentPrice: any;
@@ -135,8 +132,9 @@ export declare class HourglassAssociatedAccount implements HourglassAssociatedAc
      * and can be used to convert to JSON and/or logging
      */
     pretty(): {
-        service: boolean[];
-        isPublic: boolean;
+        hourglass: string;
+        creator: string;
+        settlementToken: string;
         auctionLength: number | {
             toNumber: () => number;
         };
@@ -152,11 +150,9 @@ export declare class HourglassAssociatedAccount implements HourglassAssociatedAc
         minimumBid: number | {
             toNumber: () => number;
         };
-        taxRate: number | {
+        taxRateBps: number | {
             toNumber: () => number;
         };
-        hourglass: string;
-        creator: string;
         nextAuctionId: number | {
             toNumber: () => number;
         };

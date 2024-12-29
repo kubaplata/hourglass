@@ -14,10 +14,10 @@ import * as beetSolana from '@metaplex-foundation/beet-solana';
  */
 export type HourglassArgs = {
     admin: web3.PublicKey;
-    feeSettlementToken: web3.PublicKey;
     feeCollector: web3.PublicKey;
-    fee: beet.bignum;
+    feeBps: beet.bignum;
     totalHourglasses: beet.bignum;
+    totalCreators: beet.bignum;
 };
 export declare const hourglassDiscriminator: number[];
 /**
@@ -29,10 +29,10 @@ export declare const hourglassDiscriminator: number[];
  */
 export declare class Hourglass implements HourglassArgs {
     readonly admin: web3.PublicKey;
-    readonly feeSettlementToken: web3.PublicKey;
     readonly feeCollector: web3.PublicKey;
-    readonly fee: beet.bignum;
+    readonly feeBps: beet.bignum;
     readonly totalHourglasses: beet.bignum;
+    readonly totalCreators: beet.bignum;
     private constructor();
     /**
      * Creates a {@link Hourglass} instance from the provided args.
@@ -59,10 +59,10 @@ export declare class Hourglass implements HourglassArgs {
     static gpaBuilder(programId?: web3.PublicKey): beetSolana.GpaBuilder<{
         accountDiscriminator: any;
         admin: any;
-        feeSettlementToken: any;
         feeCollector: any;
-        fee: any;
+        feeBps: any;
         totalHourglasses: any;
+        totalCreators: any;
     }>;
     /**
      * Deserializes the {@link Hourglass} from the provided data Buffer.
@@ -97,12 +97,14 @@ export declare class Hourglass implements HourglassArgs {
      */
     pretty(): {
         admin: string;
-        feeSettlementToken: string;
         feeCollector: string;
-        fee: number | {
+        feeBps: number | {
             toNumber: () => number;
         };
         totalHourglasses: number | {
+            toNumber: () => number;
+        };
+        totalCreators: number | {
             toNumber: () => number;
         };
     };

@@ -16,10 +16,10 @@ import * as beetSolana from '@metaplex-foundation/beet-solana'
  */
 export type HourglassArgs = {
   admin: web3.PublicKey
-  feeSettlementToken: web3.PublicKey
   feeCollector: web3.PublicKey
-  fee: beet.bignum
+  feeBps: beet.bignum
   totalHourglasses: beet.bignum
+  totalCreators: beet.bignum
 }
 
 export const hourglassDiscriminator = [28, 165, 183, 62, 195, 115, 219, 182]
@@ -33,10 +33,10 @@ export const hourglassDiscriminator = [28, 165, 183, 62, 195, 115, 219, 182]
 export class Hourglass implements HourglassArgs {
   private constructor(
     readonly admin: web3.PublicKey,
-    readonly feeSettlementToken: web3.PublicKey,
     readonly feeCollector: web3.PublicKey,
-    readonly fee: beet.bignum,
-    readonly totalHourglasses: beet.bignum
+    readonly feeBps: beet.bignum,
+    readonly totalHourglasses: beet.bignum,
+    readonly totalCreators: beet.bignum
   ) {}
 
   /**
@@ -45,10 +45,10 @@ export class Hourglass implements HourglassArgs {
   static fromArgs(args: HourglassArgs) {
     return new Hourglass(
       args.admin,
-      args.feeSettlementToken,
       args.feeCollector,
-      args.fee,
-      args.totalHourglasses
+      args.feeBps,
+      args.totalHourglasses,
+      args.totalCreators
     )
   }
 
@@ -92,7 +92,7 @@ export class Hourglass implements HourglassArgs {
    */
   static gpaBuilder(
     programId: web3.PublicKey = new web3.PublicKey(
-      '83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij'
+      'HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6'
     )
   ) {
     return beetSolana.GpaBuilder.fromStruct(programId, hourglassBeet)
@@ -156,10 +156,9 @@ export class Hourglass implements HourglassArgs {
   pretty() {
     return {
       admin: this.admin.toBase58(),
-      feeSettlementToken: this.feeSettlementToken.toBase58(),
       feeCollector: this.feeCollector.toBase58(),
-      fee: (() => {
-        const x = <{ toNumber: () => number }>this.fee
+      feeBps: (() => {
+        const x = <{ toNumber: () => number }>this.feeBps
         if (typeof x.toNumber === 'function') {
           try {
             return x.toNumber()
@@ -171,6 +170,17 @@ export class Hourglass implements HourglassArgs {
       })(),
       totalHourglasses: (() => {
         const x = <{ toNumber: () => number }>this.totalHourglasses
+        if (typeof x.toNumber === 'function') {
+          try {
+            return x.toNumber()
+          } catch (_) {
+            return x
+          }
+        }
+        return x
+      })(),
+      totalCreators: (() => {
+        const x = <{ toNumber: () => number }>this.totalCreators
         if (typeof x.toNumber === 'function') {
           try {
             return x.toNumber()
@@ -197,10 +207,10 @@ export const hourglassBeet = new beet.BeetStruct<
   [
     ['accountDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
     ['admin', beetSolana.publicKey],
-    ['feeSettlementToken', beetSolana.publicKey],
     ['feeCollector', beetSolana.publicKey],
-    ['fee', beet.u64],
+    ['feeBps', beet.u64],
     ['totalHourglasses', beet.u64],
+    ['totalCreators', beet.u64],
   ],
   Hourglass.fromArgs,
   'Hourglass'

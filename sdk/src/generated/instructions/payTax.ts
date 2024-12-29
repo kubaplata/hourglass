@@ -79,7 +79,7 @@ export const payTaxInstructionDiscriminator = [51, 5, 236, 118, 42, 113, 61, 53]
 export function createPayTaxInstruction(
   accounts: PayTaxInstructionAccounts,
   args: PayTaxInstructionArgs,
-  programId = new web3.PublicKey('83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij')
+  programId = new web3.PublicKey('HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6')
 ) {
   const [data] = payTaxStruct.serialize({
     instructionDiscriminator: payTaxInstructionDiscriminator,

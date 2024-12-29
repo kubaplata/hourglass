@@ -96,7 +96,7 @@ pub struct Bid<'info> {
             &auction_id.to_be_bytes()
         ],
         bump,
-        space = 8 + 32 + (2 * 8) + 1
+        space = UserAuctionAccount::SIZE
 
     )]
     pub user_auction_account: Account<'info, UserAuctionAccount>,

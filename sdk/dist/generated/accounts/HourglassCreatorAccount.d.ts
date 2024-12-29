@@ -4,8 +4,8 @@
  *
  * See: https://github.com/metaplex-foundation/solita
  */
-import * as beet from '@metaplex-foundation/beet';
 import * as web3 from '@solana/web3.js';
+import * as beet from '@metaplex-foundation/beet';
 import * as beetSolana from '@metaplex-foundation/beet-solana';
 /**
  * Arguments used to create {@link HourglassCreatorAccount}
@@ -13,10 +13,10 @@ import * as beetSolana from '@metaplex-foundation/beet-solana';
  * @category generated
  */
 export type HourglassCreatorAccountArgs = {
+    creator: web3.PublicKey;
     totalEarned: beet.bignum;
     toWithdraw: beet.bignum;
-    created: web3.PublicKey[];
-    withdrawalAccount: web3.PublicKey;
+    hourglasses: beet.bignum[];
 };
 export declare const hourglassCreatorAccountDiscriminator: number[];
 /**
@@ -27,10 +27,10 @@ export declare const hourglassCreatorAccountDiscriminator: number[];
  * @category generated
  */
 export declare class HourglassCreatorAccount implements HourglassCreatorAccountArgs {
+    readonly creator: web3.PublicKey;
     readonly totalEarned: beet.bignum;
     readonly toWithdraw: beet.bignum;
-    readonly created: web3.PublicKey[];
-    readonly withdrawalAccount: web3.PublicKey;
+    readonly hourglasses: beet.bignum[];
     private constructor();
     /**
      * Creates a {@link HourglassCreatorAccount} instance from the provided args.
@@ -89,14 +89,14 @@ export declare class HourglassCreatorAccount implements HourglassCreatorAccountA
      * and can be used to convert to JSON and/or logging
      */
     pretty(): {
+        creator: string;
         totalEarned: number | {
             toNumber: () => number;
         };
         toWithdraw: number | {
             toNumber: () => number;
         };
-        created: web3.PublicKey[];
-        withdrawalAccount: string;
+        hourglasses: beet.bignum[];
     };
 }
 /**

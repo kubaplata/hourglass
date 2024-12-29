@@ -55,7 +55,7 @@ exports.initializeProtocolInstructionDiscriminator = [
  * @category InitializeProtocol
  * @category generated
  */
-function createInitializeProtocolInstruction(accounts, args, programId = new web3.PublicKey('83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij')) {
+function createInitializeProtocolInstruction(accounts, args, programId = new web3.PublicKey('HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6')) {
     var _a;
     const [data] = exports.initializeProtocolStruct.serialize(Object.assign({ instructionDiscriminator: exports.initializeProtocolInstructionDiscriminator }, args));
     const keys = [
@@ -66,11 +66,6 @@ function createInitializeProtocolInstruction(accounts, args, programId = new web
         },
         {
             pubkey: accounts.hourglassProtocol,
-            isWritable: true,
-            isSigner: false,
-        },
-        {
-            pubkey: accounts.feeSettlementToken,
             isWritable: true,
             isSigner: false,
         },

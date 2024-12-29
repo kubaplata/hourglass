@@ -57,7 +57,7 @@ exports.createHourglassInstructionDiscriminator = [
  * @category CreateHourglass
  * @category generated
  */
-function createCreateHourglassInstruction(accounts, args, programId = new web3.PublicKey('83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij')) {
+function createCreateHourglassInstruction(accounts, args, programId = new web3.PublicKey('HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6')) {
     var _a, _b;
     const [data] = exports.createHourglassStruct.serialize(Object.assign({ instructionDiscriminator: exports.createHourglassInstructionDiscriminator }, args));
     const keys = [
@@ -92,12 +92,7 @@ function createCreateHourglassInstruction(accounts, args, programId = new web3.P
             isSigner: false,
         },
         {
-            pubkey: accounts.feeSettlementToken,
-            isWritable: true,
-            isSigner: false,
-        },
-        {
-            pubkey: accounts.creatorFeeSettlementTokenAccount,
+            pubkey: accounts.settlementToken,
             isWritable: true,
             isSigner: false,
         },

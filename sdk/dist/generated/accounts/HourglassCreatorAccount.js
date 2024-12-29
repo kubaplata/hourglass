@@ -39,8 +39,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.hourglassCreatorAccountBeet = exports.HourglassCreatorAccount = exports.hourglassCreatorAccountDiscriminator = void 0;
-const beet = __importStar(require("@metaplex-foundation/beet"));
 const web3 = __importStar(require("@solana/web3.js"));
+const beet = __importStar(require("@metaplex-foundation/beet"));
 const beetSolana = __importStar(require("@metaplex-foundation/beet-solana"));
 exports.hourglassCreatorAccountDiscriminator = [
     54, 84, 12, 231, 35, 92, 175, 10,
@@ -53,17 +53,17 @@ exports.hourglassCreatorAccountDiscriminator = [
  * @category generated
  */
 class HourglassCreatorAccount {
-    constructor(totalEarned, toWithdraw, created, withdrawalAccount) {
+    constructor(creator, totalEarned, toWithdraw, hourglasses) {
+        this.creator = creator;
         this.totalEarned = totalEarned;
         this.toWithdraw = toWithdraw;
-        this.created = created;
-        this.withdrawalAccount = withdrawalAccount;
+        this.hourglasses = hourglasses;
     }
     /**
      * Creates a {@link HourglassCreatorAccount} instance from the provided args.
      */
     static fromArgs(args) {
-        return new HourglassCreatorAccount(args.totalEarned, args.toWithdraw, args.created, args.withdrawalAccount);
+        return new HourglassCreatorAccount(args.creator, args.totalEarned, args.toWithdraw, args.hourglasses);
     }
     /**
      * Deserializes the {@link HourglassCreatorAccount} from the data of the provided {@link web3.AccountInfo}.
@@ -93,7 +93,7 @@ class HourglassCreatorAccount {
      *
      * @param programId - the program that owns the accounts we are filtering
      */
-    static gpaBuilder(programId = new web3.PublicKey('83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij')) {
+    static gpaBuilder(programId = new web3.PublicKey('HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6')) {
         return beetSolana.GpaBuilder.fromStruct(programId, exports.hourglassCreatorAccountBeet);
     }
     /**
@@ -140,6 +140,7 @@ class HourglassCreatorAccount {
      */
     pretty() {
         return {
+            creator: this.creator.toBase58(),
             totalEarned: (() => {
                 const x = this.totalEarned;
                 if (typeof x.toNumber === 'function') {
@@ -164,8 +165,7 @@ class HourglassCreatorAccount {
                 }
                 return x;
             })(),
-            created: this.created,
-            withdrawalAccount: this.withdrawalAccount.toBase58(),
+            hourglasses: this.hourglasses,
         };
     }
 }
@@ -176,8 +176,8 @@ exports.HourglassCreatorAccount = HourglassCreatorAccount;
  */
 exports.hourglassCreatorAccountBeet = new beet.FixableBeetStruct([
     ['accountDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
+    ['creator', beetSolana.publicKey],
     ['totalEarned', beet.u64],
     ['toWithdraw', beet.u64],
-    ['created', beet.array(beetSolana.publicKey)],
-    ['withdrawalAccount', beetSolana.publicKey],
+    ['hourglasses', beet.array(beet.u64)],
 ], HourglassCreatorAccount.fromArgs, 'HourglassCreatorAccount');

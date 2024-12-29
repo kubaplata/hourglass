@@ -46,8 +46,7 @@ export const createHourglassStruct = new beet.FixableBeetArgsStruct<
  * @property [_writable_] creatorHourglassAccount
  * @property [_writable_] hourglassAssociatedAccount
  * @property [_writable_] hourglassVault
- * @property [_writable_] feeSettlementToken
- * @property [_writable_] creatorFeeSettlementTokenAccount
+ * @property [_writable_] settlementToken
  * @property [] associatedTokenProgram
  * @property [] rentProgram
  * @category Instructions
@@ -61,8 +60,7 @@ export type CreateHourglassInstructionAccounts = {
   creatorHourglassAccount: web3.PublicKey
   hourglassAssociatedAccount: web3.PublicKey
   hourglassVault: web3.PublicKey
-  feeSettlementToken: web3.PublicKey
-  creatorFeeSettlementTokenAccount: web3.PublicKey
+  settlementToken: web3.PublicKey
   tokenProgram?: web3.PublicKey
   associatedTokenProgram: web3.PublicKey
   systemProgram?: web3.PublicKey
@@ -87,7 +85,7 @@ export const createHourglassInstructionDiscriminator = [
 export function createCreateHourglassInstruction(
   accounts: CreateHourglassInstructionAccounts,
   args: CreateHourglassInstructionArgs,
-  programId = new web3.PublicKey('83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij')
+  programId = new web3.PublicKey('HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6')
 ) {
   const [data] = createHourglassStruct.serialize({
     instructionDiscriminator: createHourglassInstructionDiscriminator,
@@ -125,12 +123,7 @@ export function createCreateHourglassInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.feeSettlementToken,
-      isWritable: true,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.creatorFeeSettlementTokenAccount,
+      pubkey: accounts.settlementToken,
       isWritable: true,
       isSigner: false,
     },

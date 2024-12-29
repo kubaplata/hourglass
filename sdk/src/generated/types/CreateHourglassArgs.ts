@@ -14,14 +14,12 @@ export type CreateHourglassArgs = {
   description: string
   image: string
   creatorName: string
-  service: boolean[] /* size: 8 */
-  isPublic: boolean
   auctionLength: beet.bignum
   ownershipPeriod: beet.bignum
   gracePeriod: beet.bignum
   minimumSalePrice: beet.bignum
   minimumBid: beet.bignum
-  taxRate: beet.bignum
+  taxRateBps: beet.bignum
   royalties: beet.bignum
 }
 
@@ -39,14 +37,12 @@ export const createHourglassArgsBeet =
       ['description', beet.utf8String],
       ['image', beet.utf8String],
       ['creatorName', beet.utf8String],
-      ['service', beet.uniformFixedSizeArray(beet.bool, 8)],
-      ['isPublic', beet.bool],
       ['auctionLength', beet.u64],
       ['ownershipPeriod', beet.u64],
       ['gracePeriod', beet.u64],
       ['minimumSalePrice', beet.u64],
       ['minimumBid', beet.u64],
-      ['taxRate', beet.u64],
+      ['taxRateBps', beet.u64],
       ['royalties', beet.u64],
     ],
     'CreateHourglassArgs'

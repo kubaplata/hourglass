@@ -5,8 +5,8 @@
  * See: https://github.com/metaplex-foundation/solita
  */
 
-import * as beet from '@metaplex-foundation/beet'
 import * as web3 from '@solana/web3.js'
+import * as beet from '@metaplex-foundation/beet'
 import * as beetSolana from '@metaplex-foundation/beet-solana'
 
 /**
@@ -15,10 +15,10 @@ import * as beetSolana from '@metaplex-foundation/beet-solana'
  * @category generated
  */
 export type HourglassCreatorAccountArgs = {
+  creator: web3.PublicKey
   totalEarned: beet.bignum
   toWithdraw: beet.bignum
-  created: web3.PublicKey[]
-  withdrawalAccount: web3.PublicKey
+  hourglasses: beet.bignum[]
 }
 
 export const hourglassCreatorAccountDiscriminator = [
@@ -33,10 +33,10 @@ export const hourglassCreatorAccountDiscriminator = [
  */
 export class HourglassCreatorAccount implements HourglassCreatorAccountArgs {
   private constructor(
+    readonly creator: web3.PublicKey,
     readonly totalEarned: beet.bignum,
     readonly toWithdraw: beet.bignum,
-    readonly created: web3.PublicKey[],
-    readonly withdrawalAccount: web3.PublicKey
+    readonly hourglasses: beet.bignum[]
   ) {}
 
   /**
@@ -44,10 +44,10 @@ export class HourglassCreatorAccount implements HourglassCreatorAccountArgs {
    */
   static fromArgs(args: HourglassCreatorAccountArgs) {
     return new HourglassCreatorAccount(
+      args.creator,
       args.totalEarned,
       args.toWithdraw,
-      args.created,
-      args.withdrawalAccount
+      args.hourglasses
     )
   }
 
@@ -93,7 +93,7 @@ export class HourglassCreatorAccount implements HourglassCreatorAccountArgs {
    */
   static gpaBuilder(
     programId: web3.PublicKey = new web3.PublicKey(
-      '83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij'
+      'HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6'
     )
   ) {
     return beetSolana.GpaBuilder.fromStruct(
@@ -164,6 +164,7 @@ export class HourglassCreatorAccount implements HourglassCreatorAccountArgs {
    */
   pretty() {
     return {
+      creator: this.creator.toBase58(),
       totalEarned: (() => {
         const x = <{ toNumber: () => number }>this.totalEarned
         if (typeof x.toNumber === 'function') {
@@ -186,8 +187,7 @@ export class HourglassCreatorAccount implements HourglassCreatorAccountArgs {
         }
         return x
       })(),
-      created: this.created,
-      withdrawalAccount: this.withdrawalAccount.toBase58(),
+      hourglasses: this.hourglasses,
     }
   }
 }
@@ -204,10 +204,10 @@ export const hourglassCreatorAccountBeet = new beet.FixableBeetStruct<
 >(
   [
     ['accountDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
+    ['creator', beetSolana.publicKey],
     ['totalEarned', beet.u64],
     ['toWithdraw', beet.u64],
-    ['created', beet.array(beetSolana.publicKey)],
-    ['withdrawalAccount', beetSolana.publicKey],
+    ['hourglasses', beet.array(beet.u64)],
   ],
   HourglassCreatorAccount.fromArgs,
   'HourglassCreatorAccount'

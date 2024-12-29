@@ -51,18 +51,18 @@ exports.hourglassDiscriminator = [28, 165, 183, 62, 195, 115, 219, 182];
  * @category generated
  */
 class Hourglass {
-    constructor(admin, feeSettlementToken, feeCollector, fee, totalHourglasses) {
+    constructor(admin, feeCollector, feeBps, totalHourglasses, totalCreators) {
         this.admin = admin;
-        this.feeSettlementToken = feeSettlementToken;
         this.feeCollector = feeCollector;
-        this.fee = fee;
+        this.feeBps = feeBps;
         this.totalHourglasses = totalHourglasses;
+        this.totalCreators = totalCreators;
     }
     /**
      * Creates a {@link Hourglass} instance from the provided args.
      */
     static fromArgs(args) {
-        return new Hourglass(args.admin, args.feeSettlementToken, args.feeCollector, args.fee, args.totalHourglasses);
+        return new Hourglass(args.admin, args.feeCollector, args.feeBps, args.totalHourglasses, args.totalCreators);
     }
     /**
      * Deserializes the {@link Hourglass} from the data of the provided {@link web3.AccountInfo}.
@@ -92,7 +92,7 @@ class Hourglass {
      *
      * @param programId - the program that owns the accounts we are filtering
      */
-    static gpaBuilder(programId = new web3.PublicKey('83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij')) {
+    static gpaBuilder(programId = new web3.PublicKey('HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6')) {
         return beetSolana.GpaBuilder.fromStruct(programId, exports.hourglassBeet);
     }
     /**
@@ -141,10 +141,9 @@ class Hourglass {
     pretty() {
         return {
             admin: this.admin.toBase58(),
-            feeSettlementToken: this.feeSettlementToken.toBase58(),
             feeCollector: this.feeCollector.toBase58(),
-            fee: (() => {
-                const x = this.fee;
+            feeBps: (() => {
+                const x = this.feeBps;
                 if (typeof x.toNumber === 'function') {
                     try {
                         return x.toNumber();
@@ -167,6 +166,18 @@ class Hourglass {
                 }
                 return x;
             })(),
+            totalCreators: (() => {
+                const x = this.totalCreators;
+                if (typeof x.toNumber === 'function') {
+                    try {
+                        return x.toNumber();
+                    }
+                    catch (_) {
+                        return x;
+                    }
+                }
+                return x;
+            })(),
         };
     }
 }
@@ -178,8 +189,8 @@ exports.Hourglass = Hourglass;
 exports.hourglassBeet = new beet.BeetStruct([
     ['accountDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
     ['admin', beetSolana.publicKey],
-    ['feeSettlementToken', beetSolana.publicKey],
     ['feeCollector', beetSolana.publicKey],
-    ['fee', beet.u64],
+    ['feeBps', beet.u64],
     ['totalHourglasses', beet.u64],
+    ['totalCreators', beet.u64],
 ], Hourglass.fromArgs, 'Hourglass');

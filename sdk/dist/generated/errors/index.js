@@ -6,7 +6,7 @@
  * See: https://github.com/metaplex-foundation/solita
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.InvalidMessageOrderError = exports.OwnershipPeriodNotEndedError = exports.OwnershipPeriodEndedError = exports.WinnerMismatchError = exports.AuctionRunningError = exports.AuctionClaimedError = exports.CannotCancelWinningBidError = exports.BidTooLowError = exports.InvalidSignersError = exports.InvalidHoourglassIDError = void 0;
+exports.InvalidFeeBpsError = exports.InvalidMessageOrderError = exports.OwnershipPeriodNotEndedError = exports.OwnershipPeriodEndedError = exports.WinnerMismatchError = exports.AuctionRunningError = exports.AuctionClaimedError = exports.CannotCancelWinningBidError = exports.BidTooLowError = exports.InvalidSignersError = exports.InvalidHoourglassIDError = void 0;
 exports.errorFromCode = errorFromCode;
 exports.errorFromName = errorFromName;
 const createErrorFromCodeLookup = new Map();
@@ -201,6 +201,25 @@ class InvalidMessageOrderError extends Error {
 exports.InvalidMessageOrderError = InvalidMessageOrderError;
 createErrorFromCodeLookup.set(0x1779, () => new InvalidMessageOrderError());
 createErrorFromNameLookup.set('InvalidMessageOrder', () => new InvalidMessageOrderError());
+/**
+ * InvalidFeeBps: 'InvalidFeeBps'
+ *
+ * @category Errors
+ * @category generated
+ */
+class InvalidFeeBpsError extends Error {
+    constructor() {
+        super('InvalidFeeBps');
+        this.code = 0x177a;
+        this.name = 'InvalidFeeBps';
+        if (typeof Error.captureStackTrace === 'function') {
+            Error.captureStackTrace(this, InvalidFeeBpsError);
+        }
+    }
+}
+exports.InvalidFeeBpsError = InvalidFeeBpsError;
+createErrorFromCodeLookup.set(0x177a, () => new InvalidFeeBpsError());
+createErrorFromNameLookup.set('InvalidFeeBps', () => new InvalidFeeBpsError());
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

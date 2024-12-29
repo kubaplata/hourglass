@@ -186,7 +186,7 @@ class Hourglass {
             }));
         });
     }
-    createHourglass(signer, keypair) {
+    createHourglass(signer, settlementToken, keypair) {
         return __awaiter(this, void 0, void 0, function* () {
             let hourglassKeypair = keypair || web3_js_1.Keypair.generate();
             let finished = !!keypair;
@@ -194,8 +194,7 @@ class Hourglass {
                 hourglassKeypair = web3_js_1.Keypair.generate();
                 finished = hourglassKeypair.publicKey.toString().toLowerCase().startsWith("hour");
             }
-            const { feeSettlementToken, totalHourglasses } = yield generated_1.Hourglass.fromAccountAddress(this.connection, this.hourglassProtocol);
-            const creatorFeeSettlementTokenAccount = (0, spl_token_1.getAssociatedTokenAddressSync)(feeSettlementToken, signer);
+            const { totalHourglasses } = yield generated_1.Hourglass.fromAccountAddress(this.connection, this.hourglassProtocol);
             const hourglassAssociatedAccount = Hourglass.deriveHourglassAssociatedAccount(new bn_js_1.default(totalHourglasses));
             const hourglassVault = (0, spl_token_1.getAssociatedTokenAddressSync)(hourglassKeypair.publicKey, hourglassAssociatedAccount, true, spl_token_1.TOKEN_2022_PROGRAM_ID);
             const ix = (0, generated_1.createCreateHourglassInstruction)({
@@ -203,14 +202,13 @@ class Hourglass {
                 creator: signer,
                 hourglassMint: hourglassKeypair.publicKey,
                 tokenProgram: spl_token_1.TOKEN_2022_PROGRAM_ID,
-                feeSettlementToken,
                 creatorHourglassAccount: Hourglass.deriveHourglassCreatorAccount(signer),
                 rentProgram: web3_js_1.SYSVAR_RENT_PUBKEY,
                 systemProgram: web3_js_1.SystemProgram.programId,
-                creatorFeeSettlementTokenAccount,
                 hourglassAssociatedAccount,
                 hourglassVault,
-                associatedTokenProgram: spl_token_1.ASSOCIATED_TOKEN_PROGRAM_ID
+                associatedTokenProgram: spl_token_1.ASSOCIATED_TOKEN_PROGRAM_ID,
+                settlementToken
             }, {
                 args: {
                     hourglassId: totalHourglasses,
@@ -218,12 +216,10 @@ class Hourglass {
                     auctionLength: 5 * 60,
                     gracePeriod: 0,
                     minimumBid: 0.1 * Math.pow(10, 6),
-                    taxRate: 150,
+                    taxRateBps: 150,
                     ownershipPeriod: 7 * 60,
                     symbol: "HOURGLASS",
-                    isPublic: true,
                     minimumSalePrice: 0.5 * Math.pow(10, 6),
-                    service: [true, false, false, false, false, false, false, false],
                     metadataUri: "https://bafkreif4jnsgheen2vzjv4in76q2tegijggmzfijaplep45ir66gbygdui.ipfs.nftstorage.link/",
                     creatorName: "Anatoly Yakovenko",
                     description: "First Hourglass, initialized by Anatoly Yakovenko himself. Powered by Hourglass Protocol.",

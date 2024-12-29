@@ -76,7 +76,7 @@ export const validateTaxInstructionDiscriminator = [
 export function createValidateTaxInstruction(
   accounts: ValidateTaxInstructionAccounts,
   args: ValidateTaxInstructionArgs,
-  programId = new web3.PublicKey('83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij')
+  programId = new web3.PublicKey('HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6')
 ) {
   const [data] = validateTaxStruct.serialize({
     instructionDiscriminator: validateTaxInstructionDiscriminator,

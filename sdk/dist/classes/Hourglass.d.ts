@@ -45,7 +45,7 @@ declare class Hourglass {
         pubkey: PublicKey;
         account: HourglassAssociatedAccount;
     }[]>;
-    createHourglass(signer: PublicKey, keypair?: Keypair): Promise<import("@solana/web3.js").TransactionInstruction>;
+    createHourglass(signer: PublicKey, settlementToken: PublicKey, keypair?: Keypair): Promise<import("@solana/web3.js").TransactionInstruction>;
     initializeAuction(signer: PublicKey, hourglassId: BN): Promise<import("@solana/web3.js").TransactionInstruction>;
     bidAuction(signer: PublicKey, bid: BN, hourglassId: BN, auctionId: BN): Promise<import("@solana/web3.js").TransactionInstruction>;
     cancelBid(signer: PublicKey, hourglassId: BN, auctionId: BN): Promise<import("@solana/web3.js").TransactionInstruction>;

@@ -27,7 +27,6 @@ export declare const initializeProtocolStruct: beet.BeetArgsStruct<InitializePro
  *
  * @property [_writable_, **signer**] admin
  * @property [_writable_] hourglassProtocol
- * @property [_writable_] feeSettlementToken
  * @property [_writable_] feeCollector
  * @category Instructions
  * @category InitializeProtocol
@@ -36,7 +35,6 @@ export declare const initializeProtocolStruct: beet.BeetArgsStruct<InitializePro
 export type InitializeProtocolInstructionAccounts = {
     admin: web3.PublicKey;
     hourglassProtocol: web3.PublicKey;
-    feeSettlementToken: web3.PublicKey;
     feeCollector: web3.PublicKey;
     systemProgram?: web3.PublicKey;
     anchorRemainingAccounts?: web3.AccountMeta[];

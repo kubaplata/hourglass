@@ -58,7 +58,7 @@ exports.validateTaxInstructionDiscriminator = [
  * @category ValidateTax
  * @category generated
  */
-function createValidateTaxInstruction(accounts, args, programId = new web3.PublicKey('83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij')) {
+function createValidateTaxInstruction(accounts, args, programId = new web3.PublicKey('HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6')) {
     var _a, _b;
     const [data] = exports.validateTaxStruct.serialize(Object.assign({ instructionDiscriminator: exports.validateTaxInstructionDiscriminator }, args));
     const keys = [

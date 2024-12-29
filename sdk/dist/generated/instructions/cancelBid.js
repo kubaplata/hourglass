@@ -56,7 +56,7 @@ exports.cancelBidInstructionDiscriminator = [
  * @category CancelBid
  * @category generated
  */
-function createCancelBidInstruction(accounts, args, programId = new web3.PublicKey('83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij')) {
+function createCancelBidInstruction(accounts, args, programId = new web3.PublicKey('HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6')) {
     var _a;
     const [data] = exports.cancelBidStruct.serialize(Object.assign({ instructionDiscriminator: exports.cancelBidInstructionDiscriminator }, args));
     const keys = [

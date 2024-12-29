@@ -37,7 +37,6 @@ export const initializeProtocolStruct = new beet.BeetArgsStruct<
  *
  * @property [_writable_, **signer**] admin
  * @property [_writable_] hourglassProtocol
- * @property [_writable_] feeSettlementToken
  * @property [_writable_] feeCollector
  * @category Instructions
  * @category InitializeProtocol
@@ -46,7 +45,6 @@ export const initializeProtocolStruct = new beet.BeetArgsStruct<
 export type InitializeProtocolInstructionAccounts = {
   admin: web3.PublicKey
   hourglassProtocol: web3.PublicKey
-  feeSettlementToken: web3.PublicKey
   feeCollector: web3.PublicKey
   systemProgram?: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
@@ -69,7 +67,7 @@ export const initializeProtocolInstructionDiscriminator = [
 export function createInitializeProtocolInstruction(
   accounts: InitializeProtocolInstructionAccounts,
   args: InitializeProtocolInstructionArgs,
-  programId = new web3.PublicKey('83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij')
+  programId = new web3.PublicKey('HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6')
 ) {
   const [data] = initializeProtocolStruct.serialize({
     instructionDiscriminator: initializeProtocolInstructionDiscriminator,
@@ -83,11 +81,6 @@ export function createInitializeProtocolInstruction(
     },
     {
       pubkey: accounts.hourglassProtocol,
-      isWritable: true,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.feeSettlementToken,
       isWritable: true,
       isSigner: false,
     },

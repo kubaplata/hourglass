@@ -56,7 +56,7 @@ exports.purchaseHourglassInstructionDiscriminator = [
  * @category PurchaseHourglass
  * @category generated
  */
-function createPurchaseHourglassInstruction(accounts, args, programId = new web3.PublicKey('83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij')) {
+function createPurchaseHourglassInstruction(accounts, args, programId = new web3.PublicKey('HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6')) {
     var _a, _b;
     const [data] = exports.purchaseHourglassStruct.serialize(Object.assign({ instructionDiscriminator: exports.purchaseHourglassInstructionDiscriminator }, args));
     const keys = [

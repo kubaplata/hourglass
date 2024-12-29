@@ -55,7 +55,7 @@ exports.bidInstructionDiscriminator = [199, 56, 85, 38, 146, 243, 37, 158];
  * @category Bid
  * @category generated
  */
-function createBidInstruction(accounts, args, programId = new web3.PublicKey('83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij')) {
+function createBidInstruction(accounts, args, programId = new web3.PublicKey('HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6')) {
     var _a;
     const [data] = exports.bidStruct.serialize(Object.assign({ instructionDiscriminator: exports.bidInstructionDiscriminator }, args));
     const keys = [

@@ -13,14 +13,12 @@ export type CreateHourglassArgs = {
     description: string;
     image: string;
     creatorName: string;
-    service: boolean[];
-    isPublic: boolean;
     auctionLength: beet.bignum;
     ownershipPeriod: beet.bignum;
     gracePeriod: beet.bignum;
     minimumSalePrice: beet.bignum;
     minimumBid: beet.bignum;
-    taxRate: beet.bignum;
+    taxRateBps: beet.bignum;
     royalties: beet.bignum;
 };
 /**

@@ -262,6 +262,7 @@ class Hourglass {
 
     async createHourglass(
         signer: PublicKey,
+        settlementToken: PublicKey,
         keypair?: Keypair
     ) {
         let hourglassKeypair = keypair || Keypair.generate();
@@ -273,16 +274,10 @@ class Hourglass {
         }
 
         const {
-            feeSettlementToken,
             totalHourglasses
         } = await HourglassProtocol.fromAccountAddress(
             this.connection,
             this.hourglassProtocol
-        );
-
-        const creatorFeeSettlementTokenAccount = getAssociatedTokenAddressSync(
-            feeSettlementToken,
-            signer,
         );
 
         const hourglassAssociatedAccount = Hourglass.deriveHourglassAssociatedAccount(
@@ -302,14 +297,13 @@ class Hourglass {
                 creator: signer,
                 hourglassMint: hourglassKeypair.publicKey,
                 tokenProgram: TOKEN_2022_PROGRAM_ID,
-                feeSettlementToken,
                 creatorHourglassAccount: Hourglass.deriveHourglassCreatorAccount(signer),
                 rentProgram: SYSVAR_RENT_PUBKEY,
                 systemProgram: SystemProgram.programId,
-                creatorFeeSettlementTokenAccount,
                 hourglassAssociatedAccount,
                 hourglassVault,
-                associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID
+                associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+                settlementToken
             },
             {
                 args: {
@@ -318,12 +312,10 @@ class Hourglass {
                     auctionLength: 5 * 60,
                     gracePeriod: 0,
                     minimumBid: 0.1 * Math.pow(10, 6),
-                    taxRate: 150,
+                    taxRateBps: 150,
                     ownershipPeriod: 7 * 60,
                     symbol: "HOURGLASS",
-                    isPublic: true,
                     minimumSalePrice: 0.5 * Math.pow(10, 6),
-                    service: [true, false, false, false, false, false, false, false],
                     metadataUri: "https://bafkreif4jnsgheen2vzjv4in76q2tegijggmzfijaplep45ir66gbygdui.ipfs.nftstorage.link/",
                     creatorName: "Anatoly Yakovenko",
                     description: "First Hourglass, initialized by Anatoly Yakovenko himself. Powered by Hourglass Protocol.",

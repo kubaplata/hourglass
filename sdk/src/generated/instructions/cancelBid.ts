@@ -71,7 +71,7 @@ export const cancelBidInstructionDiscriminator = [
 export function createCancelBidInstruction(
   accounts: CancelBidInstructionAccounts,
   args: CancelBidInstructionArgs,
-  programId = new web3.PublicKey('83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij')
+  programId = new web3.PublicKey('HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6')
 ) {
   const [data] = cancelBidStruct.serialize({
     instructionDiscriminator: cancelBidInstructionDiscriminator,

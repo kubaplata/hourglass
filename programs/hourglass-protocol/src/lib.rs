@@ -9,12 +9,7 @@ pub use states::*;
 pub mod errors;
 pub use errors::*;
 
-declare_id!("83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij");
-
-// TODO: Only interacting with the latest auction should be allowed.
-// In all instructions involving auctions [except bid cancel, cause people have to be able to withdraw their funds], 
-// we should not take auction_id as an input, but rather read latest auction id from the associated_hourglass_account.
-// Auction accounts should be closed after claiming, so this should not influence the overall flow.
+declare_id!("HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6");
 
 #[program]
 pub mod hourglass_protocol {

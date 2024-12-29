@@ -58,7 +58,7 @@ exports.claimHourglassInstructionDiscriminator = [
  * @category ClaimHourglass
  * @category generated
  */
-function createClaimHourglassInstruction(accounts, args, programId = new web3.PublicKey('83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij')) {
+function createClaimHourglassInstruction(accounts, args, programId = new web3.PublicKey('HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6')) {
     var _a, _b;
     const [data] = exports.claimHourglassStruct.serialize(Object.assign({ instructionDiscriminator: exports.claimHourglassInstructionDiscriminator }, args));
     const keys = [

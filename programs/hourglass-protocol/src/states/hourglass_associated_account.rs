@@ -41,19 +41,16 @@ use anchor_lang::prelude::*;
 // This account manages Hourglass and is used for interactions with Clockwork.
 #[account]
 pub struct HourglassAssociatedAccount {
-    // Making space for 8 possible offered future services.
-    // In v1, only service[0] matters, since it's responsible for access to the chat.
-    pub service: [bool; 8], // 1 * 8
-    pub is_public: bool, // 1
+    pub hourglass: Pubkey, // 32
+    pub creator: Pubkey, // 32
+    pub settlement_token: Pubkey, // 32
+
     pub auction_length: u64, // 8
     pub ownership_period: u64, // 8
     pub grace_period: u64, // 8
     pub minimum_sale_price: u64, // 8
     pub minimum_bid: u64, // 8
-    pub tax_rate: u64, // 8
-
-    pub hourglass: Pubkey, // 32
-    pub creator: Pubkey, // 32
+    pub tax_rate_bps: u64, // 8
 
     // ID of the next auction.
     pub next_auction_id: u64, // 8
@@ -74,4 +71,13 @@ pub struct HourglassAssociatedAccount {
 
     // Messaging
     pub message_id: u64, // 8
+}
+
+impl HourglassAssociatedAccount {
+    pub const SIZE: usize = 8 +
+        3 * 32 +
+        6 * 8 +
+        8 +
+        32 + 3 * 8 +
+        3 * 8;
 }

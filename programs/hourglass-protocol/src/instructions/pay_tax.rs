@@ -23,7 +23,7 @@ pub fn pay_tax(
     let hourglass_creator_account = &mut ctx.accounts.creator_hourglass_account;
     let system_program = &mut ctx.accounts.system_program;
 
-    let tax_rate = hourglass_associated_account.tax_rate as f64;
+    let tax_rate = hourglass_associated_account.tax_rate_bps as f64;
     let asset_value = hourglass_associated_account.current_price as f64;
 
     // Tax rate in base points * asset value / [base points], casted to int

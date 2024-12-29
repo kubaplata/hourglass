@@ -31,4 +31,7 @@ pub enum HourglassError {
 
     #[msg("Invalid message ID provided in the instruction. Messages have to be inserted in a correct order.")]
     InvalidMessageOrder,
+
+    #[msg("InvalidFeeBps")]
+    InvalidFeeBps
 }

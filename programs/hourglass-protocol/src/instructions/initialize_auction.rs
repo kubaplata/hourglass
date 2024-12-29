@@ -64,7 +64,7 @@ pub struct InitializeAuction<'info> {
     #[account(
         init,
         payer = creator,
-        space = 8 + (4 * 8) + 1 + 32,
+        space = HourglassAuction::SIZE,
         seeds = [
             "hourglass_auction".as_bytes(),
             &hourglass_id.to_be_bytes(),

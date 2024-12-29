@@ -5,8 +5,8 @@
  * See: https://github.com/metaplex-foundation/solita
  */
 
-import * as beet from '@metaplex-foundation/beet'
 import * as web3 from '@solana/web3.js'
+import * as beet from '@metaplex-foundation/beet'
 import * as beetSolana from '@metaplex-foundation/beet-solana'
 
 /**
@@ -15,16 +15,15 @@ import * as beetSolana from '@metaplex-foundation/beet-solana'
  * @category generated
  */
 export type HourglassAssociatedAccountArgs = {
-  service: boolean[] /* size: 8 */
-  isPublic: boolean
+  hourglass: web3.PublicKey
+  creator: web3.PublicKey
+  settlementToken: web3.PublicKey
   auctionLength: beet.bignum
   ownershipPeriod: beet.bignum
   gracePeriod: beet.bignum
   minimumSalePrice: beet.bignum
   minimumBid: beet.bignum
-  taxRate: beet.bignum
-  hourglass: web3.PublicKey
-  creator: web3.PublicKey
+  taxRateBps: beet.bignum
   nextAuctionId: beet.bignum
   currentOwner: web3.PublicKey
   currentPrice: beet.bignum
@@ -49,16 +48,15 @@ export class HourglassAssociatedAccount
   implements HourglassAssociatedAccountArgs
 {
   private constructor(
-    readonly service: boolean[] /* size: 8 */,
-    readonly isPublic: boolean,
+    readonly hourglass: web3.PublicKey,
+    readonly creator: web3.PublicKey,
+    readonly settlementToken: web3.PublicKey,
     readonly auctionLength: beet.bignum,
     readonly ownershipPeriod: beet.bignum,
     readonly gracePeriod: beet.bignum,
     readonly minimumSalePrice: beet.bignum,
     readonly minimumBid: beet.bignum,
-    readonly taxRate: beet.bignum,
-    readonly hourglass: web3.PublicKey,
-    readonly creator: web3.PublicKey,
+    readonly taxRateBps: beet.bignum,
     readonly nextAuctionId: beet.bignum,
     readonly currentOwner: web3.PublicKey,
     readonly currentPrice: beet.bignum,
@@ -74,16 +72,15 @@ export class HourglassAssociatedAccount
    */
   static fromArgs(args: HourglassAssociatedAccountArgs) {
     return new HourglassAssociatedAccount(
-      args.service,
-      args.isPublic,
+      args.hourglass,
+      args.creator,
+      args.settlementToken,
       args.auctionLength,
       args.ownershipPeriod,
       args.gracePeriod,
       args.minimumSalePrice,
       args.minimumBid,
-      args.taxRate,
-      args.hourglass,
-      args.creator,
+      args.taxRateBps,
       args.nextAuctionId,
       args.currentOwner,
       args.currentPrice,
@@ -137,7 +134,7 @@ export class HourglassAssociatedAccount
    */
   static gpaBuilder(
     programId: web3.PublicKey = new web3.PublicKey(
-      '83PYe3dvbceG6KH98pewdyxLfhLFTHQUc8sjJXiKAcij'
+      'HEwZhZFUgMAxHe5uP1jVRGKhNxdD7qZsoiypyifGrNq6'
     )
   ) {
     return beetSolana.GpaBuilder.fromStruct(
@@ -206,8 +203,9 @@ export class HourglassAssociatedAccount
    */
   pretty() {
     return {
-      service: this.service,
-      isPublic: this.isPublic,
+      hourglass: this.hourglass.toBase58(),
+      creator: this.creator.toBase58(),
+      settlementToken: this.settlementToken.toBase58(),
       auctionLength: (() => {
         const x = <{ toNumber: () => number }>this.auctionLength
         if (typeof x.toNumber === 'function') {
@@ -263,8 +261,8 @@ export class HourglassAssociatedAccount
         }
         return x
       })(),
-      taxRate: (() => {
-        const x = <{ toNumber: () => number }>this.taxRate
+      taxRateBps: (() => {
+        const x = <{ toNumber: () => number }>this.taxRateBps
         if (typeof x.toNumber === 'function') {
           try {
             return x.toNumber()
@@ -274,8 +272,6 @@ export class HourglassAssociatedAccount
         }
         return x
       })(),
-      hourglass: this.hourglass.toBase58(),
-      creator: this.creator.toBase58(),
       nextAuctionId: (() => {
         const x = <{ toNumber: () => number }>this.nextAuctionId
         if (typeof x.toNumber === 'function') {
@@ -370,16 +366,15 @@ export const hourglassAssociatedAccountBeet = new beet.BeetStruct<
 >(
   [
     ['accountDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['service', beet.uniformFixedSizeArray(beet.bool, 8)],
-    ['isPublic', beet.bool],
+    ['hourglass', beetSolana.publicKey],
+    ['creator', beetSolana.publicKey],
+    ['settlementToken', beetSolana.publicKey],
     ['auctionLength', beet.u64],
     ['ownershipPeriod', beet.u64],
     ['gracePeriod', beet.u64],
     ['minimumSalePrice', beet.u64],
     ['minimumBid', beet.u64],
-    ['taxRate', beet.u64],
-    ['hourglass', beetSolana.publicKey],
-    ['creator', beetSolana.publicKey],
+    ['taxRateBps', beet.u64],
     ['nextAuctionId', beet.u64],
     ['currentOwner', beetSolana.publicKey],
     ['currentPrice', beet.u64],
