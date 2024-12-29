@@ -72,6 +72,7 @@ pub fn create_hourglass(
     let rent_program = &ctx.accounts.rent_program;
     let hourglass_vault = &ctx.accounts.hourglass_vault;
     let system_program = &ctx.accounts.system_program;
+    let settlement_token = &ctx.accounts.settlement_token;
     
     require!(
         hourglass_id == hourglass_protocol.total_hourglasses,
@@ -100,6 +101,7 @@ pub fn create_hourglass(
     hourglass_associated_account.owned_till = 0;
     hourglass_associated_account.ownership_period_index = 0;
     hourglass_associated_account.message_id = 0;
+    hourglass_associated_account.settlement_token = settlement_token.key();
 
     let token_metadata: TokenMetadata = TokenMetadata {
         mint: mint.key(),

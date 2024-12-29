@@ -1,8 +1,14 @@
-use anchor_lang::system_program::{ transfer, Transfer };
 use anchor_lang::prelude::*;
+use anchor_spl::associated_token::AssociatedToken;
 use crate::states::*;
 use crate::errors::*;
-use anchor_spl::token::{ TokenAccount, Mint };
+use anchor_spl::token::{ 
+    TokenAccount, 
+    Mint,
+    Transfer,
+    transfer,
+    Token
+};
 
 pub fn bid(
     ctx: Context<Bid>,
@@ -14,10 +20,17 @@ pub fn bid(
     let hourglass_auction = &mut ctx.accounts.hourglass_auction;
     let user_auction_account = &mut ctx.accounts.user_auction_account;
     let system_program = &mut ctx.accounts.system_program;
+    let token_program = &mut ctx.accounts.token_program;
+    let user_auction_account_vault = &mut ctx.accounts.user_auction_account_vault;
+    let user_settlement_token_ata = &mut ctx.accounts.user_settlement_token_ata;
     let user = &mut ctx.accounts.user;
 
     // Check if bid is big enough.
     let minimum_bid = hourglass_associated_account.minimum_bid;
+
+    msg!("bid: {:?}", bid);
+    msg!("new_minimum_bid: {:?}", hourglass_auction.current_top_bid + minimum_bid);
+
     require!(
         bid >= hourglass_auction.current_top_bid + minimum_bid,
         HourglassError::BidTooLow
@@ -27,17 +40,18 @@ pub fn bid(
     let bid_cancelled = user_auction_account.cancelled;
 
     // If previous bid was cancelled, transfer full bid value. Otherwise, just add the missing lamports.
-    let lamports: u64 = if (bid_cancelled) { bid } else { bid - user_current_bid };
+    let amount: u64 = if (bid_cancelled) { bid } else { bid - user_current_bid };
 
     transfer(
         CpiContext::new(
-            system_program.to_account_info(), 
+            token_program.to_account_info(), 
             Transfer {
-                from: user.to_account_info(),
-                to: user_auction_account.to_account_info()
+                authority: user.to_account_info(),
+                to: user_auction_account_vault.to_account_info(),
+                from: user_settlement_token_ata.to_account_info()
             }
         ), 
-        lamports
+        amount
     )?;
 
     let clock = Clock::get()?;
@@ -101,5 +115,32 @@ pub struct Bid<'info> {
     )]
     pub user_auction_account: Account<'info, UserAuctionAccount>,
 
+    #[account(
+        address = hourglass_associated_account.settlement_token
+    )]
+    pub settlement_token: Account<'info, Mint>,
+
+    #[account(
+        mut,
+        associated_token::mint = settlement_token,
+        associated_token::authority = user
+    )]
+    pub user_settlement_token_ata: Account<'info, TokenAccount>,
+
+    #[account(
+        init_if_needed,
+        payer = user,
+        associated_token::mint = settlement_token,
+        associated_token::authority = user_auction_account
+    )]
+    pub user_auction_account_vault: Account<'info, TokenAccount>,
+
+    #[account()]
     pub system_program: Program<'info, System>,
+
+    #[account()]
+    pub token_program: Program<'info, Token>,
+
+    #[account()]
+    pub associated_token_program: Program<'info, AssociatedToken>
 }

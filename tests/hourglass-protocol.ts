@@ -290,12 +290,25 @@ describe("insurance-fund", () => {
 
         await new Promise(resolve => setTimeout(resolve, 5000));
 
-        await Promise.all(users.map(async (user, index) => {
-            const amount = new BN(index * 1000 * Math.pow(10, 6));
+        for (let i = 0; i < 10; i++) {
+            const user = users[i];
+            const amount = new BN((i + 1) * 1000 * Math.pow(10, 6));
+
             const userAuctionAccount = HourglassSdk.deriveUserAuctionAccount(
                 user.publicKey,
                 hourglassId,
                 currentAuctionId
+            );
+
+            const userSettlementTokenAta = getAssociatedTokenAddressSync(
+                settlementToken,
+                user.publicKey
+            );
+
+            const userAuctionAccountVault = getAssociatedTokenAddressSync(
+                settlementToken,
+                userAuctionAccount,
+                true
             );
 
             await program
@@ -309,11 +322,16 @@ describe("insurance-fund", () => {
                     user: user.publicKey,
                     hourglassAssociatedAccount,
                     hourglassAuction,
-                    userAuctionAccount
+                    userAuctionAccount,
+                    settlementToken,
+                    userSettlementTokenAta,
+                    userAuctionAccountVault,
+                    systemProgram: SystemProgram.programId,
+                    tokenProgram: TOKEN_PROGRAM_ID,
+                    associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
                 })
                 .signers([user])
-                .rpc()
-                .catch(err => console.log(err.logs));
-        }));
+                .rpc();
+        }
     });
 });
