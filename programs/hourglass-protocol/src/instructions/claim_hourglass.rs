@@ -1,13 +1,6 @@
 use anchor_lang::prelude::*;
-use anchor_lang::system_program;
-use anchor_lang::InstructionData;
-use solana_program::instruction::Instruction;
 use crate::errors::*;
 use crate::states::*;
-use anchor_lang::system_program::{
-    transfer,
-    Transfer
-};
 use anchor_spl::token_2022::{
     transfer_checked,
     TransferChecked,
@@ -15,7 +8,14 @@ use anchor_spl::token_2022::{
 use anchor_spl::token_interface::{
     TokenInterface,
     TokenAccount,
-    Mint
+    Mint as Token2022Mint
+};
+use anchor_spl::token::{
+    Token,
+    transfer,
+    Transfer,
+    Mint,
+    TokenAccount as NativeTokenAccount
 };
 
 pub fn claim_hourglass(
@@ -28,11 +28,14 @@ pub fn claim_hourglass(
     let hourglass_auction = &mut ctx.accounts.hourglass_auction;
     let hourglass_associated_account = &mut ctx.accounts.hourglass_associated_account;
     let user_auction_account = &mut ctx.accounts.user_auction_account;
-    let token_program = &mut ctx.accounts.token_program;
+    let token_2022_program = &mut ctx.accounts.token_2022_program;
     let hourglass_mint = &mut ctx.accounts.hourglass_mint;
     let hourglass_vault = &mut ctx.accounts.hourglass_vault;
     let user_hourglass_ata = &mut ctx.accounts.user_hourglass_ata;
     let hourglass_creator_account = &mut ctx.accounts.hourglass_creator_account;
+    let user_auction_account_ata = &ctx.accounts.user_auction_account_ata;
+    let token_program = &ctx.accounts.token_program;
+    let hourglass_creator_account_ata = &ctx.accounts.hourglass_creator_account_ata;
 
     // Check if auction has already been claimed.
     require!(
@@ -72,7 +75,7 @@ pub fn claim_hourglass(
     // Transfer Hourglass to the winner.
     transfer_checked(
         CpiContext::new_with_signer(
-            token_program.to_account_info(), 
+            token_2022_program.to_account_info(), 
             TransferChecked {
                 mint: hourglass_mint.to_account_info(),
                 from: hourglass_vault.to_account_info(),
@@ -87,10 +90,26 @@ pub fn claim_hourglass(
 
     msg!("Hourglass has been transferred");
 
-    // Transfer SOL from the winner account to creator account.
-    let lamports = hourglass_auction.current_top_bid;
-    user_auction_account.sub_lamports(lamports)?;
-    hourglass_creator_account.add_lamports(lamports)?;
+    let signer_seeds = &[
+        "user_auction_account".as_bytes(),
+        &user.key().to_bytes(),
+        &hourglass_id.to_be_bytes(),
+        &auction_id.to_be_bytes(),
+        &[ctx.bumps.user_auction_account]
+    ];
+
+    transfer(
+        CpiContext::new_with_signer(
+            token_program.to_account_info(), 
+            Transfer {
+                from: user_auction_account_ata.to_account_info(),
+                authority: user_auction_account.to_account_info(),
+                to: hourglass_creator_account_ata.to_account_info()
+            }, 
+            &[signer_seeds]
+        ), 
+        hourglass_auction.current_top_bid
+    )?;
 
     msg!("Solana has been transferred");
 
@@ -121,7 +140,8 @@ pub struct ClaimHourglass<'info> {
 
     /// CHECK: Not checking this account, since we'll validate it on hourglass_associated_account.
     #[account(
-        mut
+        mut,
+        address = hourglass_associated_account.creator
     )]
     pub creator: AccountInfo<'info>,
 
@@ -178,9 +198,9 @@ pub struct ClaimHourglass<'info> {
     #[account(
         mut,
         constraint = hourglass_mint.key() == hourglass_associated_account.hourglass,
-        mint::token_program = token_program
+        mint::token_program = token_2022_program
     )]
-    pub hourglass_mint: Box<InterfaceAccount<'info, Mint>>,
+    pub hourglass_mint: Box<InterfaceAccount<'info, Token2022Mint>>,
 
     #[account(
         init,
@@ -198,7 +218,7 @@ pub struct ClaimHourglass<'info> {
 
     #[account(
         mut,
-        token::token_program = token_program,
+        token::token_program = token_2022_program,
         constraint = hourglass_vault.mint == hourglass_mint.key(),
         constraint = hourglass_vault.owner == hourglass_associated_account.key(),
         constraint = hourglass_vault.amount == 1,
@@ -207,12 +227,37 @@ pub struct ClaimHourglass<'info> {
 
     #[account(
         mut,
-        token::token_program = token_program,
+        token::token_program = token_2022_program,
         constraint = user_hourglass_ata.mint == hourglass_mint.key(),
         constraint = user_hourglass_ata.owner == user.key(),
     )]
     pub user_hourglass_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
-    pub token_program: Interface<'info, TokenInterface>,
+    #[account(
+        mut,
+        address = hourglass_associated_account.settlement_token,
+        token::token_program = token_program
+    )]
+    pub settlement_token: Account<'info, Mint>,
+
+    #[account(
+        mut,
+        associated_token::token_program = token_program,
+        associated_token::authority = user_auction_account,
+        associated_token::mint = settlement_token
+    )]
+    pub user_auction_account_ata: Account<'info, NativeTokenAccount>,
+
+    #[account(
+        associated_token::token_program = token_program,
+        associated_token::authority = hourglass_creator_account,
+        associated_token::mint = settlement_token
+    )]
+    pub hourglass_creator_account_ata: Account<'info, NativeTokenAccount>,
+
+    pub token_2022_program: Interface<'info, TokenInterface>,
+
+    pub token_program: Program<'info, Token>,
+    
     pub system_program: Program<'info, System>,
 }

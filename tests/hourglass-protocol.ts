@@ -122,6 +122,7 @@ describe("insurance-fund", () => {
     const feeCollector = Keypair.generate();
     const user = Keypair.generate();
     let settlementToken: PublicKey;
+    let auctionWinner = Keypair.generate();
 
     before(async () => {
         let d = Keypair.generate();
@@ -333,5 +334,78 @@ describe("insurance-fund", () => {
                 .signers([user])
                 .rpc();
         }
+
+        auctionWinner = users.at(-1);
     });
+
+    it("Claim hourglass from the auction", async () => {
+        const instantSalePrice = new BN(50_000 * Math.pow(10, 6));
+        const hourglassId = new BN(0);
+        const hourglassAssociatedAccount = HourglassSdk.deriveHourglassAssociatedAccount(hourglassId);
+
+        const {
+            hourglass: hourglassMint,
+            nextAuctionId,
+            creator,
+            ownershipPeriodIndex
+        } = await HourglassAssociatedAccount.fromAccountAddress(
+            provider.connection,
+            hourglassAssociatedAccount
+        );
+
+        const hourglassCreatorAccount = HourglassSdk.deriveHourglassCreatorAccount(creator);
+        const currentAuctionId = new BN(nextAuctionId).subn(1);
+        const hourglassAuction = HourglassSdk.deriveHourglassAuction(hourglassId, currentAuctionId);
+
+        const userAuctionAccount = HourglassSdk.deriveUserAuctionAccount(auctionWinner.publicKey, hourglassId, currentAuctionId);
+        const userTaxAccount = HourglassSdk.deriveUserTaxAccount(
+            auctionWinner.publicKey,
+            hourglassId,
+            new BN(ownershipPeriodIndex)
+        );
+
+        const hourglassVault = HourglassSdk.deriveHourglassVault(
+            hourglassMint,
+            hourglassAssociatedAccount
+        );
+
+        const userHourglassAta = getAssociatedTokenAddressSync(
+            hourglassMint,
+            auctionWinner.publicKey,
+            false,
+            TOKEN_2022_PROGRAM_ID
+        );
+
+        const initializeAtaIx = createAssociatedTokenAccountIdempotentInstruction(
+            auctionWinner.publicKey,
+            userHourglassAta,
+            auctionWinner.publicKey,
+            hourglassMint,
+            TOKEN_2022_PROGRAM_ID
+        );
+
+        await program
+            .methods
+            .claimHourglass(
+                hourglassId,
+                currentAuctionId,
+                instantSalePrice
+            )
+            .accounts({
+                user: auctionWinner.publicKey,
+                creator,
+                hourglassAssociatedAccount,
+                hourglassCreatorAccount,
+                hourglassAuction,
+                userAuctionAccount,
+                hourglassMint,
+                userTaxAccount,
+                hourglassVault,
+                userHourglassAta,
+                systemProgram: SystemProgram.programId,
+                tokenProgram: TOKEN_2022_PROGRAM_ID,
+            })
+            .preInstructions([initializeAtaIx])
+            .rpc();
+    })
 });
