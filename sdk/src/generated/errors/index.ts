@@ -255,6 +255,26 @@ createErrorFromCodeLookup.set(0x177a, () => new InvalidFeeBpsError())
 createErrorFromNameLookup.set('InvalidFeeBps', () => new InvalidFeeBpsError())
 
 /**
+ * MathOverflow: 'MathOverflow'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class MathOverflowError extends Error {
+  readonly code: number = 0x177b
+  readonly name: string = 'MathOverflow'
+  constructor() {
+    super('MathOverflow')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, MathOverflowError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x177b, () => new MathOverflowError())
+createErrorFromNameLookup.set('MathOverflow', () => new MathOverflowError())
+
+/**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors
  * @category generated

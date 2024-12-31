@@ -5,6 +5,7 @@
  * See: https://github.com/metaplex-foundation/solita
  */
 
+import * as splToken from '@solana/spl-token'
 import * as beet from '@metaplex-foundation/beet'
 import * as web3 from '@solana/web3.js'
 
@@ -43,6 +44,10 @@ export const bidStruct = new beet.BeetArgsStruct<
  * @property [_writable_] hourglassAssociatedAccount
  * @property [_writable_] hourglassAuction
  * @property [_writable_] userAuctionAccount
+ * @property [] settlementToken
+ * @property [_writable_] userSettlementTokenAta
+ * @property [_writable_] userAuctionAccountVault
+ * @property [] associatedTokenProgram
  * @category Instructions
  * @category Bid
  * @category generated
@@ -52,7 +57,12 @@ export type BidInstructionAccounts = {
   hourglassAssociatedAccount: web3.PublicKey
   hourglassAuction: web3.PublicKey
   userAuctionAccount: web3.PublicKey
+  settlementToken: web3.PublicKey
+  userSettlementTokenAta: web3.PublicKey
+  userAuctionAccountVault: web3.PublicKey
   systemProgram?: web3.PublicKey
+  tokenProgram?: web3.PublicKey
+  associatedTokenProgram: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
@@ -99,7 +109,32 @@ export function createBidInstruction(
       isSigner: false,
     },
     {
+      pubkey: accounts.settlementToken,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.userSettlementTokenAta,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.userAuctionAccountVault,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
       pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.tokenProgram ?? splToken.TOKEN_PROGRAM_ID,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.associatedTokenProgram,
       isWritable: false,
       isSigner: false,
     },

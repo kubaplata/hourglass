@@ -47,6 +47,7 @@ export const createHourglassStruct = new beet.FixableBeetArgsStruct<
  * @property [_writable_] hourglassAssociatedAccount
  * @property [_writable_] hourglassVault
  * @property [_writable_] settlementToken
+ * @property [] token2022Program
  * @property [] associatedTokenProgram
  * @property [] rentProgram
  * @category Instructions
@@ -61,6 +62,7 @@ export type CreateHourglassInstructionAccounts = {
   hourglassAssociatedAccount: web3.PublicKey
   hourglassVault: web3.PublicKey
   settlementToken: web3.PublicKey
+  token2022Program: web3.PublicKey
   tokenProgram?: web3.PublicKey
   associatedTokenProgram: web3.PublicKey
   systemProgram?: web3.PublicKey
@@ -125,6 +127,11 @@ export function createCreateHourglassInstruction(
     {
       pubkey: accounts.settlementToken,
       isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.token2022Program,
+      isWritable: false,
       isSigner: false,
     },
     {

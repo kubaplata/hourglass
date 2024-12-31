@@ -38,13 +38,17 @@ export const payTaxStruct = new beet.BeetArgsStruct<
  *
  * @property [_writable_, **signer**] user
  * @property [_writable_] hourglassAssociatedAccount
+ * @property [_writable_] settlementToken
+ * @property [_writable_] userSettlementTokenAta
  * @property [_writable_] userTaxAccount
  * @property [_writable_] userNextTaxAccount
  * @property [_writable_] hourglassMint
  * @property [_writable_] hourglassVault
  * @property [_writable_] userHourglassAta
  * @property [_writable_] creatorHourglassAccount
+ * @property [_writable_] hourglassCreatorAccountSettlementTokenAta
  * @property [_writable_] creator
+ * @property [] token2022Program
  * @category Instructions
  * @category PayTax
  * @category generated
@@ -52,13 +56,17 @@ export const payTaxStruct = new beet.BeetArgsStruct<
 export type PayTaxInstructionAccounts = {
   user: web3.PublicKey
   hourglassAssociatedAccount: web3.PublicKey
+  settlementToken: web3.PublicKey
+  userSettlementTokenAta: web3.PublicKey
   userTaxAccount: web3.PublicKey
   userNextTaxAccount: web3.PublicKey
   hourglassMint: web3.PublicKey
   hourglassVault: web3.PublicKey
   userHourglassAta: web3.PublicKey
   creatorHourglassAccount: web3.PublicKey
+  hourglassCreatorAccountSettlementTokenAta: web3.PublicKey
   creator: web3.PublicKey
+  token2022Program: web3.PublicKey
   tokenProgram?: web3.PublicKey
   systemProgram?: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
@@ -97,6 +105,16 @@ export function createPayTaxInstruction(
       isSigner: false,
     },
     {
+      pubkey: accounts.settlementToken,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.userSettlementTokenAta,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
       pubkey: accounts.userTaxAccount,
       isWritable: true,
       isSigner: false,
@@ -127,8 +145,18 @@ export function createPayTaxInstruction(
       isSigner: false,
     },
     {
+      pubkey: accounts.hourglassCreatorAccountSettlementTokenAta,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
       pubkey: accounts.creator,
       isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.token2022Program,
+      isWritable: false,
       isSigner: false,
     },
     {

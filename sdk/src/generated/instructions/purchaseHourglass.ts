@@ -39,13 +39,19 @@ export const purchaseHourglassStruct = new beet.BeetArgsStruct<
  * @property [_writable_, **signer**] user
  * @property [_writable_] seller
  * @property [_writable_] hourglassAssociatedAccount
+ * @property [_writable_] settlementToken
  * @property [_writable_] hourglassMint
  * @property [_writable_] userHourglassAta
+ * @property [_writable_] userSettlementTokenAta
+ * @property [_writable_] sellerSettlementTokenAta
+ * @property [_writable_] creatorHourglassAccountSettlementTokenAta
  * @property [_writable_] sellerHourglassAta
  * @property [_writable_] creatorHourglassAccount
  * @property [_writable_] creator
  * @property [_writable_] userTaxAccount
  * @property [_writable_] hourglassVault
+ * @property [] token2022Program
+ * @property [] associatedTokenProgram
  * @category Instructions
  * @category PurchaseHourglass
  * @category generated
@@ -54,15 +60,21 @@ export type PurchaseHourglassInstructionAccounts = {
   user: web3.PublicKey
   seller: web3.PublicKey
   hourglassAssociatedAccount: web3.PublicKey
+  settlementToken: web3.PublicKey
   hourglassMint: web3.PublicKey
   userHourglassAta: web3.PublicKey
+  userSettlementTokenAta: web3.PublicKey
+  sellerSettlementTokenAta: web3.PublicKey
+  creatorHourglassAccountSettlementTokenAta: web3.PublicKey
   sellerHourglassAta: web3.PublicKey
   creatorHourglassAccount: web3.PublicKey
   creator: web3.PublicKey
   userTaxAccount: web3.PublicKey
   hourglassVault: web3.PublicKey
   systemProgram?: web3.PublicKey
+  token2022Program: web3.PublicKey
   tokenProgram?: web3.PublicKey
+  associatedTokenProgram: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
@@ -106,12 +118,32 @@ export function createPurchaseHourglassInstruction(
       isSigner: false,
     },
     {
+      pubkey: accounts.settlementToken,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
       pubkey: accounts.hourglassMint,
       isWritable: true,
       isSigner: false,
     },
     {
       pubkey: accounts.userHourglassAta,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.userSettlementTokenAta,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.sellerSettlementTokenAta,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.creatorHourglassAccountSettlementTokenAta,
       isWritable: true,
       isSigner: false,
     },
@@ -146,7 +178,17 @@ export function createPurchaseHourglassInstruction(
       isSigner: false,
     },
     {
+      pubkey: accounts.token2022Program,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
       pubkey: accounts.tokenProgram ?? splToken.TOKEN_PROGRAM_ID,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.associatedTokenProgram,
       isWritable: false,
       isSigner: false,
     },

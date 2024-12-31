@@ -1,13 +1,14 @@
 use anchor_lang::prelude::*;
-use anchor_lang::system_program::Transfer;
-use anchor_lang::system_program::transfer;
-use anchor_lang::InstructionData;
+use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token_interface::{
     TokenInterface,
-    TokenAccount,
-    Mint,
+    TokenAccount as Token2022TokenAccount,
+    Mint as Token2022Mint,
     transfer_checked,
     TransferChecked
+};
+use anchor_spl::token::{
+    transfer, Mint, Token, TokenAccount, Transfer
 };
 use crate::states::*;
 
@@ -22,10 +23,13 @@ pub fn purchase_hourglass(
     let hourglass = &mut ctx.accounts.hourglass_mint;
     let price = hourglass_associated_account.current_price;
     let royalties_rate: u64 = hourglass_associated_account.royalties;
-    let token_program = &mut ctx.accounts.token_program;
+    let token_2022_program = &mut ctx.accounts.token_2022_program;
     let system_program = &mut ctx.accounts.system_program;
     let seller_ata = &mut ctx.accounts.seller_hourglass_ata;
     let buyer_ata = &mut ctx.accounts.user_hourglass_ata;
+    let creator_hourglass_account_settlement_token_ata = &ctx.accounts.creator_hourglass_account_settlement_token_ata;
+    let user_settlement_token_ata = &ctx.accounts.user_settlement_token_ata;
+    let seller_settlement_token_ata = &ctx.accounts.seller_settlement_token_ata;
 
     // Since royalties rate is in base points (1/10_000), we have to divide by 10k.
     let royalties = (royalties_rate / 10_000) * price;
@@ -37,8 +41,9 @@ pub fn purchase_hourglass(
         CpiContext::new(
             system_program.to_account_info(), 
             Transfer {
-                from: user.to_account_info(),
-                to: creator_account.to_account_info()
+                from: user_settlement_token_ata.to_account_info(),
+                to: creator_hourglass_account_settlement_token_ata.to_account_info(),
+                authority: user.to_account_info()
             }
         ), 
         royalties
@@ -48,8 +53,9 @@ pub fn purchase_hourglass(
         CpiContext::new(
             system_program.to_account_info(), 
             Transfer {
-                from: user.to_account_info(),
-                to: seller.to_account_info()
+                from: user_settlement_token_ata.to_account_info(),
+                to: seller_settlement_token_ata.to_account_info(),
+                authority: user.to_account_info()
             }
         ), 
         price - royalties
@@ -68,7 +74,7 @@ pub fn purchase_hourglass(
 
     transfer_checked(
         CpiContext::new_with_signer(
-            token_program.to_account_info(), 
+            token_2022_program.to_account_info(), 
             TransferChecked {
                 from: seller_ata.to_account_info(),
                 mint: hourglass.to_account_info(),
@@ -118,31 +124,69 @@ pub struct PurchaseHourglass<'info> {
 
     #[account(
         mut,
-        constraint = hourglass_mint.key() == hourglass_associated_account.hourglass,
+        address = hourglass_associated_account.settlement_token,
         mint::token_program = token_program
     )]
-    pub hourglass_mint: InterfaceAccount<'info, Mint>,
+    pub settlement_token: Box<Account<'info, Mint>>,
 
     #[account(
         mut,
-        token::token_program = token_program,
-        constraint = user_hourglass_ata.mint == hourglass_mint.key(),
-        constraint = user_hourglass_ata.owner == user.key(),
+        constraint = hourglass_mint.key() == hourglass_associated_account.hourglass,
+        mint::token_program = token_2022_program
     )]
-    pub user_hourglass_ata: InterfaceAccount<'info, TokenAccount>,
+    pub hourglass_mint: Box<InterfaceAccount<'info, Token2022Mint>>,
+
+    #[account(
+        init_if_needed,
+        payer = user,
+        associated_token::token_program = token_2022_program,
+        associated_token::mint = hourglass_mint,
+        associated_token::authority = user,
+        // constraint = user_hourglass_ata.mint == hourglass_mint.key(),
+        // constraint = user_hourglass_ata.owner == user.key(),
+    )]
+    pub user_hourglass_ata: Box<InterfaceAccount<'info, Token2022TokenAccount>>,
+
+    #[account(
+        init_if_needed,
+        payer = user,
+        associated_token::authority = user,
+        associated_token::mint = settlement_token
+    )]
+    pub user_settlement_token_ata: Box<Account<'info, TokenAccount>>,
+
+    #[account(
+        init_if_needed,
+        payer = user,
+        associated_token::authority = seller,
+        associated_token::mint = settlement_token,
+        associated_token::token_program = token_program
+    )]
+    pub seller_settlement_token_ata: Box<Account<'info, TokenAccount>>,
+
+    #[account(
+        init_if_needed,
+        payer = user,
+        associated_token::authority = creator_hourglass_account,
+        associated_token::mint = settlement_token
+    )]
+    pub creator_hourglass_account_settlement_token_ata: Box<Account<'info, TokenAccount>>,
 
     #[account(
         mut,
-        token::token_program = token_program,
+        token::token_program = token_2022_program,
         constraint = seller_hourglass_ata.mint == hourglass_mint.key(),
         constraint = seller_hourglass_ata.owner == seller.key(),
         constraint = seller_hourglass_ata.amount == 1,
     )]
-    pub seller_hourglass_ata: InterfaceAccount<'info, TokenAccount>,
+    pub seller_hourglass_ata: Box<InterfaceAccount<'info, Token2022TokenAccount>>,
 
     #[account(
         mut,
-        seeds = [b"hourglass_creator_account", creator.key().as_ref()],
+        seeds = [
+            b"hourglass_creator_account", 
+            creator.key().as_ref()
+        ],
         bump
     )]
     pub creator_hourglass_account: Box<Account<'info, HourglassCreatorAccount>>,
@@ -166,18 +210,21 @@ pub struct PurchaseHourglass<'info> {
         ],
         bump
     )]
-    pub user_tax_account: Account<'info, UserTaxAccount>,
+    pub user_tax_account: Box<Account<'info, UserTaxAccount>>,
 
     #[account(
         mut,
-        token::token_program = token_program,
+        token::token_program = token_2022_program,
         constraint = hourglass_vault.mint == hourglass_mint.key(),
         constraint = hourglass_vault.owner == hourglass_associated_account.key(),
         // Only can purchase for a fixed price if the owner is not the program, but other user.
         constraint = hourglass_vault.amount == 0
     )]
-    pub hourglass_vault: InterfaceAccount<'info, TokenAccount>,
+    pub hourglass_vault: Box<InterfaceAccount<'info, Token2022TokenAccount>>,
 
     pub system_program: Program<'info, System>,
-    pub token_program: Interface<'info, TokenInterface>,
+    pub token_2022_program: Interface<'info, TokenInterface>,
+    pub token_program: Program<'info, Token>,
+
+    pub associated_token_program: Program<'info, AssociatedToken>,
 }

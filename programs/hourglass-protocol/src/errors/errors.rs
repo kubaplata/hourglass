@@ -33,5 +33,8 @@ pub enum HourglassError {
     InvalidMessageOrder,
 
     #[msg("InvalidFeeBps")]
-    InvalidFeeBps
+    InvalidFeeBps,
+
+    #[msg("MathOverflow")]
+    MathOverflow,
 }

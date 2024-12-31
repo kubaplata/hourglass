@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use anchor_spl::associated_token::AssociatedToken;
 use crate::errors::*;
 use crate::states::*;
 use anchor_spl::token_2022::{
@@ -179,11 +180,10 @@ pub struct ClaimHourglass<'info> {
         // Only allow instruction, if hourglass is not claimed yet.
         constraint = !hourglass_auction.claimed
     )]
-    pub hourglass_auction: Account<'info, HourglassAuction>,
+    pub hourglass_auction: Box<Account<'info, HourglassAuction>>,
 
     #[account(
-        init_if_needed,
-        payer = user,
+        mut,
         seeds = [
             "user_auction_account".as_bytes(),
             &user.key().to_bytes(),
@@ -191,9 +191,8 @@ pub struct ClaimHourglass<'info> {
             &auction_id.to_be_bytes()
         ],
         bump,
-        space = 8 + (2 * 8) + 1
     )]
-    pub user_auction_account: Account<'info, UserAuctionAccount>,
+    pub user_auction_account: Box<Account<'info, UserAuctionAccount>>,
 
     #[account(
         mut,
@@ -238,7 +237,7 @@ pub struct ClaimHourglass<'info> {
         address = hourglass_associated_account.settlement_token,
         token::token_program = token_program
     )]
-    pub settlement_token: Account<'info, Mint>,
+    pub settlement_token: Box<Account<'info, Mint>>,
 
     #[account(
         mut,
@@ -246,18 +245,22 @@ pub struct ClaimHourglass<'info> {
         associated_token::authority = user_auction_account,
         associated_token::mint = settlement_token
     )]
-    pub user_auction_account_ata: Account<'info, NativeTokenAccount>,
+    pub user_auction_account_ata: Box<Account<'info, NativeTokenAccount>>,
 
     #[account(
+        init_if_needed,
+        payer = user,
         associated_token::token_program = token_program,
         associated_token::authority = hourglass_creator_account,
         associated_token::mint = settlement_token
     )]
-    pub hourglass_creator_account_ata: Account<'info, NativeTokenAccount>,
+    pub hourglass_creator_account_ata: Box<Account<'info, NativeTokenAccount>>,
 
     pub token_2022_program: Interface<'info, TokenInterface>,
 
     pub token_program: Program<'info, Token>,
     
     pub system_program: Program<'info, System>,
+
+    pub associated_token_program: Program<'info, AssociatedToken>,
 }

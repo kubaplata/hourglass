@@ -50,6 +50,11 @@ export const claimHourglassStruct = new beet.BeetArgsStruct<
  * @property [_writable_] userTaxAccount
  * @property [_writable_] hourglassVault
  * @property [_writable_] userHourglassAta
+ * @property [_writable_] settlementToken
+ * @property [_writable_] userAuctionAccountAta
+ * @property [_writable_] hourglassCreatorAccountAta
+ * @property [] token2022Program
+ * @property [] associatedTokenProgram
  * @category Instructions
  * @category ClaimHourglass
  * @category generated
@@ -65,8 +70,13 @@ export type ClaimHourglassInstructionAccounts = {
   userTaxAccount: web3.PublicKey
   hourglassVault: web3.PublicKey
   userHourglassAta: web3.PublicKey
+  settlementToken: web3.PublicKey
+  userAuctionAccountAta: web3.PublicKey
+  hourglassCreatorAccountAta: web3.PublicKey
+  token2022Program: web3.PublicKey
   tokenProgram?: web3.PublicKey
   systemProgram?: web3.PublicKey
+  associatedTokenProgram: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
@@ -145,12 +155,37 @@ export function createClaimHourglassInstruction(
       isSigner: false,
     },
     {
+      pubkey: accounts.settlementToken,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.userAuctionAccountAta,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.hourglassCreatorAccountAta,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.token2022Program,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
       pubkey: accounts.tokenProgram ?? splToken.TOKEN_PROGRAM_ID,
       isWritable: false,
       isSigner: false,
     },
     {
       pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.associatedTokenProgram,
       isWritable: false,
       isSigner: false,
     },

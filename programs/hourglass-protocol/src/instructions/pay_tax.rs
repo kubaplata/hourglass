@@ -1,17 +1,14 @@
 use anchor_lang::{prelude::*, InstructionData};
-use anchor_lang::{
-    system_program::{
-        Transfer,
-        transfer
-    }
+use anchor_spl::token::{
+    transfer, Mint, Token, TokenAccount, Transfer
 };
-use solana_program::instruction::Instruction;
 use crate::states::*;
 use anchor_spl::token_interface::{
-    Mint,
+    Mint as Token2022Mint,
     TokenInterface,
-    TokenAccount,
+    TokenAccount as Token2022TokenAccount,
 };
+use crate::errors::HourglassError;
 
 pub fn pay_tax(
     ctx: Context<PayTax>,
@@ -20,23 +17,29 @@ pub fn pay_tax(
     let user = &mut ctx.accounts.user;
     let user_tax_account = &mut ctx.accounts.user_tax_account;
     let hourglass_associated_account = &mut ctx.accounts.hourglass_associated_account;
-    let hourglass_creator_account = &mut ctx.accounts.creator_hourglass_account;
-    let system_program = &mut ctx.accounts.system_program;
 
-    let tax_rate = hourglass_associated_account.tax_rate_bps as f64;
-    let asset_value = hourglass_associated_account.current_price as f64;
+    let user_settlement_token_ata = &ctx.accounts.user_settlement_token_ata;
+    let hourglass_creator_account_settlement_token_ata = &ctx.accounts.hourglass_creator_account_settlement_token_ata;
+    let token_program = &ctx.accounts.token_program;
 
-    // Tax rate in base points * asset value / [base points], casted to int
-    let lamports = (tax_rate * asset_value / (10_000 as f64)) as u64;
+    let tax_rate = hourglass_associated_account.tax_rate_bps as u64;
+    
+    let tax_amount = tax_rate
+        .checked_mul(hourglass_associated_account.current_price)
+        .ok_or(HourglassError::MathOverflow)?
+        .checked_div(10_000)
+        .ok_or(HourglassError::MathOverflow)?;
+
     transfer(
         CpiContext::new(
-            system_program.to_account_info(),
+            token_program.to_account_info(),
             Transfer {
-                from: user.to_account_info(),
-                to: hourglass_creator_account.to_account_info()
+                from: user_settlement_token_ata.to_account_info(),
+                to: hourglass_creator_account_settlement_token_ata.to_account_info(),
+                authority: user.to_account_info()
             }
         ), 
-        lamports,
+        tax_amount,
     )?;
 
     user_tax_account.paid_tax = true;
@@ -65,9 +68,24 @@ pub struct PayTax<'info> {
         ],
         bump,
         // Only allow the current owner to pay the tax.
-        constraint = hourglass_associated_account.current_owner == user.key()
+        constraint = hourglass_associated_account.current_owner == user.key(),
+        has_one = settlement_token
     )]
     pub hourglass_associated_account: Box<Account<'info, HourglassAssociatedAccount>>,
+
+    #[account(
+        mut,
+        address = hourglass_associated_account.settlement_token
+    )]
+    pub settlement_token: Account<'info, Mint>,
+
+    #[account(
+        mut,
+        associated_token::token_program = token_program,
+        associated_token::mint = settlement_token,
+        associated_token::authority = user,
+    )]
+    pub user_settlement_token_ata: Account<'info, TokenAccount>,
 
     #[account(
         mut,
@@ -100,27 +118,27 @@ pub struct PayTax<'info> {
     #[account(
         mut,
         constraint = hourglass_mint.key() == hourglass_associated_account.hourglass,
-        mint::token_program = token_program
+        mint::token_program = token_2022_program
     )]
-    pub hourglass_mint: InterfaceAccount<'info, Mint>,
+    pub hourglass_mint: InterfaceAccount<'info, Token2022Mint>,
 
     #[account(
         mut,
-        token::token_program = token_program,
+        token::token_program = token_2022_program,
         constraint = hourglass_vault.mint == hourglass_mint.key(),
         constraint = hourglass_vault.owner == hourglass_associated_account.key(),
         constraint = hourglass_vault.amount == 0,
     )]
-    pub hourglass_vault: InterfaceAccount<'info, TokenAccount>,
+    pub hourglass_vault: InterfaceAccount<'info, Token2022TokenAccount>,
 
     #[account(
         mut,
-        token::token_program = token_program,
+        token::token_program = token_2022_program,
         constraint = user_hourglass_ata.mint == hourglass_mint.key(),
         constraint = user_hourglass_ata.owner == user.key(),
         constraint = user_hourglass_ata.amount == 1
     )]
-    pub user_hourglass_ata: InterfaceAccount<'info, TokenAccount>,
+    pub user_hourglass_ata: InterfaceAccount<'info, Token2022TokenAccount>,
 
     #[account(
         mut,
@@ -128,6 +146,14 @@ pub struct PayTax<'info> {
         bump
     )]
     pub creator_hourglass_account: Box<Account<'info, HourglassCreatorAccount>>,
+
+    #[account(
+        mut,
+        associated_token::authority = creator_hourglass_account,
+        associated_token::mint = settlement_token,
+        associated_token::token_program = token_program
+    )]
+    pub hourglass_creator_account_settlement_token_ata: Account<'info, TokenAccount>,
     
     /// CHECK: Safe, we check against specific pubkey.
     #[account(
@@ -136,6 +162,9 @@ pub struct PayTax<'info> {
     )]
     pub creator: AccountInfo<'info>,
 
-    pub token_program: Interface<'info, TokenInterface>,
+    pub token_2022_program: Interface<'info, TokenInterface>,
+
+    pub token_program: Program<'info, Token>,
+
     pub system_program: Program<'info, System>,
 }
