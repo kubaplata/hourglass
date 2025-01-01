@@ -20,6 +20,7 @@ import {
     TOKEN_PROGRAM_ID
 } from "@solana/spl-token";
 import {expect} from "chai";
+import {it} from "mocha";
 
 function handleAnchorError(err: AnchorError) {
     console.log(err.logs);
@@ -684,6 +685,423 @@ describe("hourglass-protocol", () => {
                 hourglassCreatorAccountSettlementTokenAta,
             })
             .signers([buyer])
+            .rpc();
+    });
+
+    it("Validates tax, fails with OwnershipPeriodNotEnded.", async () => {
+        const hourglassId = new BN(0);
+        const hourglassAssociatedAccount = HourglassSdk
+            .deriveHourglassAssociatedAccount(hourglassId);
+
+        const {
+            ownershipPeriodIndex,
+            hourglass: hourglassMint,
+            ownershipPeriod,
+            ownedTill
+        } = await HourglassAssociatedAccount
+            .fromAccountAddress(
+                provider.connection,
+                hourglassAssociatedAccount
+            );
+
+        const userTaxAccount = HourglassSdk
+            .deriveUserTaxAccount(
+                buyer.publicKey,
+                hourglassId,
+                new BN(ownershipPeriodIndex).subn(1)
+            );
+
+        const hourglassVault = HourglassSdk
+            .deriveHourglassVault(
+                hourglassMint,
+                hourglassAssociatedAccount
+            );
+
+        const hourglassOwnerAta = getAssociatedTokenAddressSync(
+            hourglassMint,
+            buyer.publicKey,
+            true,
+            TOKEN_2022_PROGRAM_ID
+        );
+
+        // Wait for the old ownership period to end.
+        await new Promise(resolve => setTimeout(resolve, new BN(ownershipPeriod).muln(1000).toNumber()));
+
+        let error: AnchorError;
+        await program
+            .methods
+            .validateTax(
+                hourglassId,
+                buyer.publicKey // holder of the hourglass
+            )
+            .accounts({
+                hourglassAssociatedAccount,
+                userTaxAccount,
+                hourglassVault,
+                hourglassMint,
+                hourglassOwnerAta,
+                systemProgram: SystemProgram.programId,
+                tokenProgram: TOKEN_2022_PROGRAM_ID,
+            })
+            .rpc()
+            .catch(err => error = err);
+
+        expect(error?.message).to.include("OwnershipPeriodNotEnded");
+    });
+
+    it("Validates tax. Brings hourglass back to the owner.", async () => {
+        const hourglassId = new BN(0);
+        const hourglassAssociatedAccount = HourglassSdk
+            .deriveHourglassAssociatedAccount(hourglassId);
+
+        const {
+            ownershipPeriodIndex,
+            hourglass: hourglassMint,
+            ownershipPeriod,
+            ownedTill
+        } = await HourglassAssociatedAccount
+            .fromAccountAddress(
+                provider.connection,
+                hourglassAssociatedAccount
+            );
+
+        const userTaxAccount = HourglassSdk
+            .deriveUserTaxAccount(
+                buyer.publicKey,
+                hourglassId,
+                new BN(ownershipPeriodIndex).subn(1)
+            );
+
+        const hourglassVault = HourglassSdk
+            .deriveHourglassVault(
+                hourglassMint,
+                hourglassAssociatedAccount
+            );
+
+        const hourglassOwnerAta = getAssociatedTokenAddressSync(
+            hourglassMint,
+            buyer.publicKey,
+            true,
+            TOKEN_2022_PROGRAM_ID
+        );
+
+        // Wait for the old ownership period to end.
+        await new Promise(resolve => setTimeout(resolve, new BN(ownershipPeriod).muln(1000).toNumber()));
+
+        let error: AnchorError;
+        await program
+            .methods
+            .validateTax(
+                hourglassId,
+                buyer.publicKey // holder of the hourglass
+            )
+            .accounts({
+                hourglassAssociatedAccount,
+                userTaxAccount,
+                hourglassVault,
+                hourglassMint,
+                hourglassOwnerAta,
+                systemProgram: SystemProgram.programId,
+                tokenProgram: TOKEN_2022_PROGRAM_ID,
+            })
+            .rpc();
+    });
+
+    it('Reauctions the hourglass.', async () => {
+        const hourglassId = new BN(0);
+        const hourglassAssociatedAccount = HourglassSdk.deriveHourglassAssociatedAccount(hourglassId);
+
+        const {
+            hourglass: hourglassMint,
+            nextAuctionId
+        } = await HourglassAssociatedAccount.fromAccountAddress(
+            provider.connection,
+            hourglassAssociatedAccount
+        );
+
+        const hourglassVault = HourglassSdk.deriveHourglassVault(
+            hourglassMint,
+            hourglassAssociatedAccount
+        );
+
+        const hourglassAuction = HourglassSdk.deriveHourglassAuction(
+            hourglassId,
+            new BN(nextAuctionId)
+        );
+
+        await program
+            .methods
+            .initializeAuction(hourglassId)
+            .accounts({
+                creator: user.publicKey,
+                hourglassAssociatedAccount,
+                hourglassMint,
+                hourglassVault,
+                hourglassAuction,
+                tokenProgram: TOKEN_2022_PROGRAM_ID,
+                systemProgram: SystemProgram.programId
+            })
+            .signers([user])
+            .rpc();
+    });
+
+    it('Makes bids and wins the new auction. Cancels losing bids.', async () => {
+        const hourglassId = new BN(0);
+        const hourglassAssociatedAccount = HourglassSdk.deriveHourglassAssociatedAccount(hourglassId);
+
+        const {
+            hourglass: hourglassMint,
+            nextAuctionId
+        } = await HourglassAssociatedAccount.fromAccountAddress(
+            provider.connection,
+            hourglassAssociatedAccount
+        );
+
+        const currentAuctionId = new BN(nextAuctionId).subn(1);
+        const hourglassAuction = HourglassSdk.deriveHourglassAuction(hourglassId, currentAuctionId);
+
+        const users: Keypair[] = [];
+
+        for (let i = 0; i < 10; i++) {
+            const user = Keypair.generate();
+
+            await provider.connection.requestAirdrop(
+                user.publicKey,
+                5 * LAMPORTS_PER_SOL
+            );
+
+            await mintToken(
+                user.publicKey,
+                settlementToken,
+                100_000,
+                provider
+            );
+
+            users.push(user);
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        for (let i = 0; i < 10; i++) {
+            const user = users[i];
+            const amount = new BN((i + 1) * 1000 * Math.pow(10, 6));
+
+            const userAuctionAccount = HourglassSdk.deriveUserAuctionAccount(
+                user.publicKey,
+                hourglassId,
+                currentAuctionId
+            );
+
+            const userSettlementTokenAta = getAssociatedTokenAddressSync(
+                settlementToken,
+                user.publicKey
+            );
+
+            const userAuctionAccountVault = getAssociatedTokenAddressSync(
+                settlementToken,
+                userAuctionAccount,
+                true
+            );
+
+            await program
+                .methods
+                .bid(
+                    new BN(hourglassId),
+                    currentAuctionId,
+                    amount
+                )
+                .accounts({
+                    user: user.publicKey,
+                    hourglassAssociatedAccount,
+                    hourglassAuction,
+                    userAuctionAccount,
+                    settlementToken,
+                    userSettlementTokenAta,
+                    userAuctionAccountVault,
+                    systemProgram: SystemProgram.programId,
+                    tokenProgram: TOKEN_PROGRAM_ID,
+                    associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+                })
+                .signers([user])
+                .rpc();
+        }
+
+        for (let i = 0; i < 9; i++) {
+            const user = users[i];
+
+            const userAuctionAccount = HourglassSdk.deriveUserAuctionAccount(
+                user.publicKey,
+                hourglassId,
+                currentAuctionId
+            );
+
+            const userSettlementTokenAta = getAssociatedTokenAddressSync(
+                settlementToken,
+                user.publicKey
+            );
+
+            const userAuctionAccountVault = getAssociatedTokenAddressSync(
+                settlementToken,
+                userAuctionAccount,
+                true
+            );
+
+            await program
+                .methods
+                .cancelBid(
+                    hourglassId,
+                    currentAuctionId
+                )
+                .accounts({
+                    user: user.publicKey,
+                    hourglassAssociatedAccount,
+                    hourglassAuction,
+                    userAuctionAccount,
+                    settlementToken,
+                    userSettlementTokenAta,
+                    userAuctionAccountVault,
+                    systemProgram: SystemProgram.programId,
+                    tokenProgram: TOKEN_PROGRAM_ID,
+                })
+                .signers([user])
+                .rpc()
+                .catch(err => handleAnchorError(err));
+        }
+
+        auctionWinner = users.at(-1);
+    });
+
+    it("Claims hourglass from the auction", async () => {
+        const instantSalePrice = new BN(50_000 * Math.pow(10, 6));
+        const hourglassId = new BN(0);
+        const hourglassAssociatedAccount = HourglassSdk
+            .deriveHourglassAssociatedAccount(hourglassId);
+
+        const {
+            hourglass: hourglassMint,
+            nextAuctionId,
+            creator,
+            ownershipPeriodIndex,
+            auctionLength
+        } = await HourglassAssociatedAccount.fromAccountAddress(
+            provider.connection,
+            hourglassAssociatedAccount
+        );
+
+        await new Promise(resolve => setTimeout(resolve, new BN(auctionLength).toNumber() * 1000));
+
+        const hourglassCreatorAccount = HourglassSdk.deriveHourglassCreatorAccount(creator);
+        const currentAuctionId = new BN(nextAuctionId).subn(1);
+        const hourglassAuction = HourglassSdk.deriveHourglassAuction(hourglassId, currentAuctionId);
+
+        const userAuctionAccount = HourglassSdk.deriveUserAuctionAccount(auctionWinner.publicKey, hourglassId, currentAuctionId);
+        const userTaxAccount = HourglassSdk.deriveUserTaxAccount(
+            auctionWinner.publicKey,
+            hourglassId,
+            new BN(ownershipPeriodIndex)
+        );
+
+        const hourglassVault = HourglassSdk.deriveHourglassVault(
+            hourglassMint,
+            hourglassAssociatedAccount
+        );
+
+        const userHourglassAta = getAssociatedTokenAddressSync(
+            hourglassMint,
+            auctionWinner.publicKey,
+            false,
+            TOKEN_2022_PROGRAM_ID
+        );
+
+        const initializeAtaIx = createAssociatedTokenAccountIdempotentInstruction(
+            auctionWinner.publicKey,
+            userHourglassAta,
+            auctionWinner.publicKey,
+            hourglassMint,
+            TOKEN_2022_PROGRAM_ID
+        );
+
+        const userAuctionAccountAta = getAssociatedTokenAddressSync(
+            settlementToken,
+            userAuctionAccount,
+            true,
+            TOKEN_PROGRAM_ID
+        );
+
+        const hourglassCreatorAccountAta = getAssociatedTokenAddressSync(
+            settlementToken,
+            hourglassCreatorAccount,
+            true,
+            TOKEN_PROGRAM_ID
+        );
+
+        await program
+            .methods
+            .claimHourglass(
+                hourglassId,
+                currentAuctionId,
+                instantSalePrice
+            )
+            .accounts({
+                user: auctionWinner.publicKey,
+                creator,
+                hourglassAssociatedAccount,
+                hourglassCreatorAccount,
+                hourglassAuction,
+                userAuctionAccount,
+                hourglassMint,
+                userTaxAccount,
+                hourglassVault,
+                userHourglassAta,
+                systemProgram: SystemProgram.programId,
+                tokenProgram: TOKEN_PROGRAM_ID,
+                token2022Program: TOKEN_2022_PROGRAM_ID,
+                settlementToken,
+                userAuctionAccountAta,
+                hourglassCreatorAccountAta,
+                associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+            })
+            .preInstructions([initializeAtaIx])
+            .signers([auctionWinner])
+            .rpc()
+            .catch(err => handleAnchorError(err));
+    });
+
+    it('Sends message.', async () => {
+        const hourglassId = new BN(0);
+        const hourglassAssociatedAccount = HourglassSdk
+            .deriveHourglassAssociatedAccount(hourglassId);
+
+        const {
+            messageId
+        } = await HourglassAssociatedAccount.fromAccountAddress(
+            provider.connection,
+            hourglassAssociatedAccount
+        );
+
+        const [message] = PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("message"),
+                hourglassId.toArrayLike(Buffer, "be", 8),
+                new BN(messageId).toArrayLike(Buffer, "be", 8),
+            ],
+            PROGRAM_ID
+        );
+
+        await program
+            .methods
+            .sendMessage(
+                hourglassId,
+                new BN(messageId),
+                "sending test message"
+            )
+            .accounts({
+                user: auctionWinner.publicKey,
+                hourglassAssociatedAccount,
+                message,
+                systemProgram: SystemProgram.programId
+            })
+            .signers([auctionWinner])
             .rpc();
     });
 });

@@ -9,7 +9,7 @@ pub struct Message {
 }
 
 impl Message {
-    pub fn size(content: String) -> usize {
+    pub fn size(content: &String) -> usize {
         return 8 + 2 * 8 + 32 + 8 + content.len();
     }
 }

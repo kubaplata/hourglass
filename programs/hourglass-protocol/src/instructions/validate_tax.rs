@@ -37,6 +37,9 @@ pub fn validate_tax(
     let clock = Clock::get()?;
     let time_now = clock.unix_timestamp as u64;
 
+    msg!("owned_till: {:?}", hourglass_associated_account.owned_till);
+    msg!("timestamp: {:?}", time_now);
+
     require!(
         hourglass_associated_account.owned_till <= time_now,
         HourglassError::OwnershipPeriodNotEnded

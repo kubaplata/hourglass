@@ -48,7 +48,7 @@ pub struct SendMessage<'info> {
 
     #[account(
         init,
-        space = 8 + 32 + 8 + message_content.len(),
+        space = Message::size(&message_content),
         seeds = [
             "message".as_bytes(),
             &hourglass_id.to_be_bytes(),
